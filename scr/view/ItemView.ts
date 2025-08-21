@@ -13,7 +13,7 @@ export default class ItemView {
         this.router.get("/items", this.itemController.getItems);
         this.router.get("/items/:id", this.itemController.getItemById);
         this.router.post("/items/create", this.itemController.createItem);
-        this.router.delete("/items/delete/:id", this.itemController.deleteItem);
+        this.router.put("/items/delete/:id", this.itemController.deleteItem);
         this.router.put("/items/modify/:id", this.itemController.updateItem);
     };
 }

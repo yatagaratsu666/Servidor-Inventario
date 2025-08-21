@@ -9,20 +9,18 @@ export default class Server {
 
     constructor(private readonly productView: ProductView, private readonly itemView: ItemView){
         this.app = express()
-        this.configure() // CORS y body parser configurados antes de rutas
+        this.configure()
         this.routes()
         this.static()
     }
 
     readonly configure = (): void => {
-        // ✅ CORS global antes de las rutas
         this.app.use(cors({
             origin: 'http://localhost:4200',
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
             allowedHeaders: ['Content-Type', 'Authorization']
         }))
 
-        // JSON y URL encoded con límite grande para evitar PayloadTooLarge
         this.app.use(express.json({ limit: '10mb' }))
         this.app.use(express.urlencoded({ extended: true, limit: '10mb' }))
     }

@@ -107,38 +107,35 @@ export default class HeroModel {
      await this.client.close();
    }
  };
+  
+  readonly updateHeroById = async (
+    id: number,
+    updatedItem: Partial<HeroInterface>
+  ): Promise<HeroInterface | null> => {
+    try {
+      await this.client.connect();
+      const db = this.client.db(this.dbName);
+      const collection = db.collection<HeroInterface>(this.collectionName);
 
-  
-    readonly updateHeroById = async (
-      id: number,
-      updatedHero: Partial<HeroInterface>
-    ): Promise<HeroInterface | null> => {
-      try {
-        await this.client.connect();
-        const db = this.client.db(this.dbName);
-        const collection = db.collection<HeroInterface>(this.collectionName);
-  
-        // Actualiza el documento
-        const updateResult = await collection.updateOne(
-          { id },
-          { $set: updatedHero }
-        );
-  
-        if (updateResult.matchedCount === 0) {
-          console.log(`No se encontró heroe con id ${id}`);
-          return null;
-        }
-  
-        console.log(`heroe con id ${id} actualizado con éxito`);
-  
-        // Trae el documento actualizado
-        const updatedDoc = await collection.findOne({ id });
-        return updatedDoc;
-      } catch (error) {
-        console.error("Error al actualizar heroe:", error);
-        throw error;
-      } finally {
-        await this.client.close();
+      const updateResult = await collection.updateOne(
+        { id },
+        { $set: updatedItem }
+      );
+
+      if (updateResult.matchedCount === 0) {
+        console.log(`No se encontró item con id ${id}`);
+        return null;
       }
-    };
+
+      console.log(`Item con id ${id} actualizado con éxito`);
+
+      const updatedDoc = await collection.findOne({ id });
+      return updatedDoc;
+    } catch (error) {
+      console.error("Error al actualizar item:", error);
+      throw error;
+    } finally {
+      await this.client.close();
+    }
+  };
 }

@@ -13,7 +13,7 @@ export default class HeroView{
         this.router.get("/heroes", this.heroController.getHeroes);
         this.router.get("/heroes/:id", this.heroController.getHeroById);
         this.router.post("/heroes/create", this.heroController.createHero);
-        this.router.delete("/heroes/delete/:id", this.heroController.deleteHero);
+        this.router.put("/heroes/delete/:id", this.heroController.deleteHero);
         this.router.put("/heroes/modify/:id", this.heroController.updateHero);
        // inserte rutas aqui :333
     }
