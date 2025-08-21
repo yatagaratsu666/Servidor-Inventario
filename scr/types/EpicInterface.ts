@@ -2,7 +2,8 @@ export interface EpicInterface {
   image: string;
   id: number;
   name: string;
-  HeroType: string;
+  heroType: string;
+  description: string;
   status: boolean;
   effects: {
     effectType: string;

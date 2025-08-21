@@ -13,7 +13,7 @@ export default class ArmorView{
         this.router.get("/armors", this.armorController.getArmor);
         this.router.get("/armors/:id", this.armorController.getArmorById);
         this.router.post("/armors/create", this.armorController.createArmor);
-        this.router.delete("/armors/delete/:id", this.armorController.deleteArmor);
+        this.router.put("/armors/delete/:id", this.armorController.deleteArmor);
         this.router.put("/armors/modify/:id", this.armorController.updateArmor);
        // inserte rutas aqui :333
     }

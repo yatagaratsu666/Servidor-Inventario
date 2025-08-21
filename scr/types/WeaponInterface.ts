@@ -2,6 +2,7 @@ export interface WeaponInterface {
   image: string;
   id: number;
   name: string;
+  description: string;
   status: boolean;
   effects: {
     effectType: string;

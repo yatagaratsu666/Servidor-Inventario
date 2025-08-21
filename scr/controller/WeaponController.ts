@@ -7,10 +7,10 @@ export default class WeaponController {
 
   readonly getWeapons = async (_req: Request, res: Response): Promise<void> => {
     try {
-      const heroes = await this.weaponModel.getAllWeapons();
-      res.status(200).json(heroes);
+      const weapons = await this.weaponModel.getAllWeapons();
+      res.status(200).json(weapons);
     } catch (error) {
-      res.status(500).json({ message: "Error al obtener héroes", error });
+      res.status(500).json({ message: "Error al obtener armas", error });
     }
   };
 

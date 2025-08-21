@@ -13,7 +13,7 @@ export default class EpicView{
         this.router.get("/epics", this.epicController.getEpics);
         this.router.get("/epics/:id", this.epicController.getEpicById);
         this.router.post("/epics/create", this.epicController.createEpic);
-        this.router.delete("/epics/delete/:id", this.epicController.deleteEpic);
+        this.router.put("/epics/delete/:id", this.epicController.deleteEpic);
         this.router.put("/epics/modify/:id", this.epicController.updateEpic);
        // inserte rutas aqui :333
     }
