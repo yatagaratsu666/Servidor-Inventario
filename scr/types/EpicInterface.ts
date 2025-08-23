@@ -5,6 +5,7 @@ export interface EpicInterface {
   heroType: string;
   description: string;
   status: boolean;
+  stock: number;
   effects: {
     effectType: string;
     value: number | string;

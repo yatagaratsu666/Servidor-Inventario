@@ -9,6 +9,7 @@ export default interface HeroInterface {
     health: number;
     defense: number;
     status: boolean;
+    stock: number;
     attack: number;
     attackBoost: {
         min: number;

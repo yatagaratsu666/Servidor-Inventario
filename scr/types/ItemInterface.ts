@@ -5,6 +5,7 @@ export default interface ItemInterface {
     description: string;
     name: string;
     status: boolean;
+    stock: number;
     effects: {
         effectType: string;
         value: number;
