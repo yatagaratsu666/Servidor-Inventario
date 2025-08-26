@@ -2,7 +2,7 @@ import { MongoClient } from "mongodb";
 import HeroInterface from "../types/HeroInterface";
 
 export default class HeroModel {
-  private uri = "mongodb://localhost:27017";
+  private uri = "mongodb://localhost:27017"; // Cambiar por "mongodb://mongo-contenedor:27017" una vez se use Docker
   private dbName = "Inventario";
   private collectionName = "heroes";
   private client: MongoClient;

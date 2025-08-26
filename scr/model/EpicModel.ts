@@ -2,7 +2,7 @@ import { MongoClient } from "mongodb";
 import { EpicInterface } from "../types/EpicInterface";
 
 export default class EpicModel {
-  private uri = "mongodb://localhost:27017";
+  private uri = "mongodb://localhost:27017"; // Cambiar por "mongodb://mongo-contenedor:27017" una vez se use Docker
   private dbName = "Inventario";
   private collectionName = "epics";
   private client: MongoClient;

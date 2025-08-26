@@ -2,7 +2,7 @@ import { MongoClient } from "mongodb";
 import ItemInterface from "../types/ItemInterface";
 
 export default class ItemModel {
-  private uri = "mongodb://localhost:27017";
+  private uri = "mongodb://localhost:27017"; // Cambiar por "mongodb://mongo-contenedor:27017" una vez se use Docker
   private dbName = "Inventario";
   private collectionName = "items";
   private client: MongoClient;
