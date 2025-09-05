@@ -2,9 +2,9 @@ import { MongoClient } from "mongodb";
 import { ArmorInterface } from "../types/ArmorInterface";
 
 export default class ArmorModel {
-  private uri = "mongodb://localhost:27017";
-  private dbName = "Inventario";
-  private collectionName = "armors";
+  private uri = process.env.MONGO_URI!;
+  private dbName = process.env.MONGO_DB!;
+  private collectionName = process.env.MONGO_COLLECTION_ARMORS!;
   private client: MongoClient;
 
   constructor() {

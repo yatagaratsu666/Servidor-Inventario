@@ -2,9 +2,9 @@ import { MongoClient } from "mongodb";
 import { WeaponInterface } from "../types/WeaponInterface"
 
 export default class WeaponModel {
-  private uri = "mongodb://localhost:27017"; // Cambiar por "mongodb://mongo-contenedor:27017" una vez se use Docker
-  private dbName = "Inventario";
-  private collectionName = "weapons";
+  private uri = process.env.MONGO_URI!;
+  private dbName = process.env.MONGO_DB!;
+  private collectionName = process.env.MONGO_COLLECTION_WEAPONS!;
   private client: MongoClient;
 
   constructor() {
