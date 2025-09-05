@@ -1,6 +1,6 @@
-import { Request, Response } from "express";
-import HeroModel from "../model/HeroModel";
-import HeroInterface from "../types/HeroInterface";
+import { Request, Response } from 'express';
+import HeroModel from '../model/HeroModel';
+import HeroInterface from '../types/HeroInterface';
 
 export default class HeroController {
   constructor(private readonly heroModel: HeroModel) {}
@@ -10,7 +10,7 @@ export default class HeroController {
       const heroes = await this.heroModel.getAllHeroes();
       res.status(200).json(heroes);
     } catch (error) {
-      res.status(500).json({ message: "Error al obtener héroes", error });
+      res.status(500).json({ message: 'Error al obtener héroes', error });
     }
   };
 
@@ -22,13 +22,13 @@ export default class HeroController {
       const hero = await this.heroModel.getHeroById(heroId);
 
       if (!hero) {
-        res.status(404).json({ message: "Héroe no encontrado" });
+        res.status(404).json({ message: 'Héroe no encontrado' });
         return;
       }
 
       res.status(200).json(hero);
     } catch (error) {
-      res.status(500).json({ message: "Error al obtener héroe por ID", error });
+      res.status(500).json({ message: 'Error al obtener héroe por ID', error });
     }
   };
 
@@ -37,15 +37,15 @@ export default class HeroController {
       const hero: HeroInterface = req.body;
 
       if (!hero || !hero.name) {
-        res.status(400).json({ message: "Faltan datos del héroe" });
+        res.status(400).json({ message: 'Faltan datos del héroe' });
         return;
       }
 
       await this.heroModel.createHero(hero);
-      res.status(201).json({ message: "Héroe creado con éxito", hero });
+      res.status(201).json({ message: 'Héroe creado con éxito', hero });
     } catch (error) {
-      console.error("Error en createHero:", error);
-      res.status(500).json({ message: "Error al crear héroe" });
+      console.error('Error en createHero:', error);
+      res.status(500).json({ message: 'Error al crear héroe' });
     }
   };
 
@@ -55,7 +55,7 @@ export default class HeroController {
       const heroId = parseInt(id, 10);
 
       if (isNaN(heroId)) {
-        res.status(400).json({ message: "ID inválido" });
+        res.status(400).json({ message: 'ID inválido' });
         return;
       }
 
@@ -72,43 +72,49 @@ export default class HeroController {
         .status(200)
         .json({ message: `Héroe con id ${heroId} eliminado con éxito` });
     } catch (error) {
-      console.error("Error en deleteHero:", error);
-      res.status(500).json({ message: "Error al eliminar héroe", error });
+      console.error('Error en deleteHero:', error);
+      res.status(500).json({ message: 'Error al eliminar héroe', error });
     }
   };
 
-readonly updateHero = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params as { id: string };
-    const heroId = parseInt(id, 10);
+  readonly updateHero = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params as { id: string };
+      const heroId = parseInt(id, 10);
 
-    if (isNaN(heroId)) {
-      res.status(400).json({ message: "ID inválido" });
-      return;
+      if (isNaN(heroId)) {
+        res.status(400).json({ message: 'ID inválido' });
+        return;
+      }
+
+      const { ...updatedFields } = req.body;
+
+      if (!updatedFields || Object.keys(updatedFields).length === 0) {
+        res
+          .status(400)
+          .json({ message: 'No se enviaron campos para actualizar' });
+        return;
+      }
+
+      const updatedHero = await this.heroModel.updateHeroById(
+        heroId,
+        updatedFields,
+      );
+
+      if (!updatedHero) {
+        res
+          .status(404)
+          .json({ message: `No se encontró item con id ${heroId}` });
+        return;
+      }
+
+      res.status(200).json({
+        message: `Item con id ${heroId} actualizado con éxito`,
+        updatedHero,
+      });
+    } catch (error) {
+      console.error('Error en updateItem:', error);
+      res.status(500).json({ message: 'Error al actualizar item', error });
     }
-
-    const { id: _, ...updatedFields } = req.body;
-
-    if (!updatedFields || Object.keys(updatedFields).length === 0) {
-      res.status(400).json({ message: "No se enviaron campos para actualizar" });
-      return;
-    }
-
-    const updatedHero = await this.heroModel.updateHeroById(heroId, updatedFields);
-
-    if (!updatedHero) {
-      res.status(404).json({ message: `No se encontró item con id ${heroId}` });
-      return;
-    }
-
-    res.status(200).json({
-      message: `Item con id ${heroId} actualizado con éxito`,
-      updatedHero,
-    });
-  } catch (error) {
-    console.error("Error en updateItem:", error);
-    res.status(500).json({ message: "Error al actualizar item", error });
-  }
-};
-    
+  };
 }

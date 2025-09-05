@@ -2,7 +2,7 @@ import { MongoClient } from "mongodb";
 import { ArmorInterface } from "../types/ArmorInterface";
 
 export default class ArmorModel {
-  private uri = "mongodb://localhost:27017"; // Cambiar por "mongodb://mongo-contenedor:27017" una vez se use Docker
+  private uri = "mongodb://localhost:27017";
   private dbName = "Inventario";
   private collectionName = "armors";
   private client: MongoClient;

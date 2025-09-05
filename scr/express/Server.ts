@@ -1,11 +1,12 @@
-import express, { Application } from "express"
-import ProductView from "../view/HeroView"
-import ItemView from "../view/ItemView"
-import WeaponView from "../view/WeaponView"
-import EpicView from "../view/EpicView"
-import ArmorView from "../view/ArmorView"
-import path from "path"
-import cors from 'cors';
+import express, { Application } from "express";
+import ProductView from "../view/HeroView";
+import ItemView from "../view/ItemView";
+import WeaponView from "../view/WeaponView";
+import EpicView from "../view/EpicView";
+import ArmorView from "../view/ArmorView";
+import path from "path";
+import cors from "cors";
+import { environment } from "../enviroment/enviroment";
 
 export default class Server {
   private readonly app: Application;
@@ -26,36 +27,37 @@ export default class Server {
   readonly configure = (): void => {
     this.app.use(
       cors({
-        origin: [
-          'http://backend-inventario:4200', // desde frontend en la misma red Docker
-          'http://localhost:4200', // desde navegador en host local
-          'http://<IP_DEL_SERVIDOR>:4200', // Cambiar por el dns nuevo de la maquina el cual sera nexusinventario.bucaramanga.upb.edu.co una vez se use Docker
-        ],
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'], 
+        origin: (origin, callback) => {
+          if (!origin || environment.allowedOrigins.includes(origin)) {
+            callback(null, true);
+          } else {
+            callback(new Error(`CORS policy: ${origin} no permitido`));
+          }
+        },
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
       })
     );
 
-    this.app.use(express.json({ limit: '10mb' }));
-    this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-  }; // aun falta poner tokens en esta parte :33
+    this.app.use(express.json({ limit: "10mb" }));
+    this.app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+  };
 
   readonly routes = (): void => {
-    this.app.use('/', this.productView.router);
-    this.app.use('/', this.itemView.router);
-    this.app.use('/', this.weaponView.router);
-    this.app.use('/', this.epicView.router);
-    this.app.use('/', this.armorView.router);
+    this.app.use("/", this.productView.router);
+    this.app.use("/", this.itemView.router);
+    this.app.use("/", this.weaponView.router);
+    this.app.use("/", this.epicView.router);
+    this.app.use("/", this.armorView.router);
   };
 
   readonly static = (): void => {
-    this.app.use(express.static(path.join(__dirname, '../../assets/img')));
+    this.app.use(express.static(path.join(__dirname, "../../", environment.staticPath)));
   };
 
   readonly start = (): void => {
-    const port = 1882;
-    this.app.listen(port, '0.0.0.0', () => {
-      console.log(`Server running on port ${port}`);
+    this.app.listen(environment.port, "0.0.0.0", () => {
+      console.log(`Server running on port ${environment.port}`);
     });
   };
 }

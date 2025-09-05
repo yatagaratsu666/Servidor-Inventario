@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongodb_1 = require("mongodb");
 class WeaponModel {
-    uri = "mongodb://localhost:27017";
+    uri = "mongodb://localhost:27017"; // Cambiar por "mongodb://mongo-contenedor:27017" una vez se use Docker
     dbName = "Inventario";
     collectionName = "weapons";
     client;

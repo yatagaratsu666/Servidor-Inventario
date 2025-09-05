@@ -11,7 +11,7 @@ class HeroController {
             res.status(200).json(heroes);
         }
         catch (error) {
-            res.status(500).json({ message: "Error al obtener héroes", error });
+            res.status(500).json({ message: 'Error al obtener héroes', error });
         }
     };
     getHeroById = async (req, res) => {
@@ -20,28 +20,28 @@ class HeroController {
             const heroId = parseInt(id, 10);
             const hero = await this.heroModel.getHeroById(heroId);
             if (!hero) {
-                res.status(404).json({ message: "Héroe no encontrado" });
+                res.status(404).json({ message: 'Héroe no encontrado' });
                 return;
             }
             res.status(200).json(hero);
         }
         catch (error) {
-            res.status(500).json({ message: "Error al obtener héroe por ID", error });
+            res.status(500).json({ message: 'Error al obtener héroe por ID', error });
         }
     };
     createHero = async (req, res) => {
         try {
             const hero = req.body;
             if (!hero || !hero.name) {
-                res.status(400).json({ message: "Faltan datos del héroe" });
+                res.status(400).json({ message: 'Faltan datos del héroe' });
                 return;
             }
             await this.heroModel.createHero(hero);
-            res.status(201).json({ message: "Héroe creado con éxito", hero });
+            res.status(201).json({ message: 'Héroe creado con éxito', hero });
         }
         catch (error) {
-            console.error("Error en createHero:", error);
-            res.status(500).json({ message: "Error al crear héroe" });
+            console.error('Error en createHero:', error);
+            res.status(500).json({ message: 'Error al crear héroe' });
         }
     };
     deleteHero = async (req, res) => {
@@ -49,7 +49,7 @@ class HeroController {
             const { id } = req.params;
             const heroId = parseInt(id, 10);
             if (isNaN(heroId)) {
-                res.status(400).json({ message: "ID inválido" });
+                res.status(400).json({ message: 'ID inválido' });
                 return;
             }
             const deleted = await this.heroModel.toggleItemStatusById(heroId);
@@ -64,8 +64,8 @@ class HeroController {
                 .json({ message: `Héroe con id ${heroId} eliminado con éxito` });
         }
         catch (error) {
-            console.error("Error en deleteHero:", error);
-            res.status(500).json({ message: "Error al eliminar héroe", error });
+            console.error('Error en deleteHero:', error);
+            res.status(500).json({ message: 'Error al eliminar héroe', error });
         }
     };
     updateHero = async (req, res) => {
@@ -73,17 +73,21 @@ class HeroController {
             const { id } = req.params;
             const heroId = parseInt(id, 10);
             if (isNaN(heroId)) {
-                res.status(400).json({ message: "ID inválido" });
+                res.status(400).json({ message: 'ID inválido' });
                 return;
             }
-            const { id: _, ...updatedFields } = req.body;
+            const { ...updatedFields } = req.body;
             if (!updatedFields || Object.keys(updatedFields).length === 0) {
-                res.status(400).json({ message: "No se enviaron campos para actualizar" });
+                res
+                    .status(400)
+                    .json({ message: 'No se enviaron campos para actualizar' });
                 return;
             }
             const updatedHero = await this.heroModel.updateHeroById(heroId, updatedFields);
             if (!updatedHero) {
-                res.status(404).json({ message: `No se encontró item con id ${heroId}` });
+                res
+                    .status(404)
+                    .json({ message: `No se encontró item con id ${heroId}` });
                 return;
             }
             res.status(200).json({
@@ -92,8 +96,8 @@ class HeroController {
             });
         }
         catch (error) {
-            console.error("Error en updateItem:", error);
-            res.status(500).json({ message: "Error al actualizar item", error });
+            console.error('Error en updateItem:', error);
+            res.status(500).json({ message: 'Error al actualizar item', error });
         }
     };
 }
