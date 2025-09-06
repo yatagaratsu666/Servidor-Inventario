@@ -2,9 +2,24 @@ import { Request, Response } from "express";
 import ArmorModel from "../model/ArmorModel";
 import { ArmorInterface } from "../types/ArmorInterface";
 
+/**
+ * @class ArmorController
+ * @classdesc Controlador encargado de manejar las operaciones relacionadas con las armaduras.
+ * Contiene métodos para obtener, crear, actualizar y eliminar armaduras.
+ */
 export default class ArmorController {
+  /**
+   * @constructor
+   * @param {ArmorModel} armorModel - Instancia del modelo ArmorModel para interactuar con la base de datos.
+   */
   constructor(private readonly armorModel: ArmorModel) {}
 
+  /**
+   * @description Obtiene todas las armaduras disponibles en la base de datos.
+   * @param {Request} _req - Objeto de la petición HTTP (no se utiliza en este caso).
+   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @returns {Promise<void>} Devuelve un JSON con todas las armaduras.
+   */
   readonly getArmor = async (_req: Request, res: Response): Promise<void> => {
     try {
       const armors= await this.armorModel.getAllArmors();
@@ -14,6 +29,12 @@ export default class ArmorController {
     }
   };
 
+  /**
+   * @description Obtiene una armadura específica por su ID.
+   * @param {Request} req - Objeto de la petición HTTP que contiene el parámetro `id`.
+   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @returns {Promise<void>} Devuelve la armadura encontrada o un error 404 si no existe.
+   */
   readonly getArmorById = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params as { id: string };
@@ -32,6 +53,12 @@ export default class ArmorController {
     }
   };
 
+  /**
+   * @description Crea una nueva armadura en la base de datos.
+   * @param {Request} req - Objeto de la petición HTTP que contiene los datos de la armadura en el body.
+   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @returns {Promise<void>} Devuelve un mensaje de éxito y la armadura creada.
+   */
   readonly createArmor = async (req: Request, res: Response): Promise<void> => {
     try {
       const armor: ArmorInterface = req.body;
@@ -49,6 +76,12 @@ export default class ArmorController {
     }
   };
 
+  /**
+   * @description Elimina (o desactiva) una armadura por su ID.
+   * @param {Request} req - Objeto de la petición HTTP que contiene el parámetro `id`.
+   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @returns {Promise<void>} Devuelve un mensaje de éxito o error si la armadura no existe.
+   */
   readonly deleteArmor = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params as { id: string };
@@ -77,6 +110,12 @@ export default class ArmorController {
     }
   };
 
+  /**
+   * @description Actualiza los datos de una armadura por su ID.
+   * @param {Request} req - Objeto de la petición HTTP que contiene el parámetro `id` y los campos a actualizar en el body.
+   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @returns {Promise<void>} Devuelve la armadura actualizada o un error si no existe.
+   */
   readonly updateArmor = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params as { id: string };

@@ -2,9 +2,19 @@ import { Request, Response } from "express";
 import WeaponModel from "../model/WeaponModel";
 import { WeaponInterface } from "../types/WeaponInterface";
 
+/**
+ * Controlador para gestionar las operaciones CRUD sobre Armas.
+ */
 export default class WeaponController {
   constructor(private readonly weaponModel: WeaponModel) {}
 
+  /**
+   * Obtiene todas las armas.
+   *
+   * @param {Request} _req - Objeto de la solicitud (no usado en este caso).
+   * @param {Response} res - Objeto de la respuesta para enviar las armas.
+   * @returns {Promise<void>} - Promesa que resuelve sin valor.
+   */
   readonly getWeapons = async (_req: Request, res: Response): Promise<void> => {
     try {
       const weapons = await this.weaponModel.getAllWeapons();
@@ -14,6 +24,13 @@ export default class WeaponController {
     }
   };
 
+  /**
+   * Obtiene un arma por su ID.
+   *
+   * @param {Request} req - Objeto de la solicitud, que contiene el parámetro `id`.
+   * @param {Response} res - Objeto de la respuesta para enviar el arma encontrada.
+   * @returns {Promise<void>} - Promesa que resuelve sin valor.
+   */
   readonly getWeaponById = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params as { id: string };
@@ -32,6 +49,13 @@ export default class WeaponController {
     }
   };
 
+  /**
+   * Crea una nueva arma.
+   *
+   * @param {Request} req - Objeto de la solicitud, que contiene los datos del arma en el cuerpo.
+   * @param {Response} res - Objeto de la respuesta para confirmar la creación.
+   * @returns {Promise<void>} - Promesa que resuelve sin valor.
+   */
   readonly createWeapon = async (req: Request, res: Response): Promise<void> => {
     try {
       const weapon: WeaponInterface = req.body;
@@ -49,6 +73,13 @@ export default class WeaponController {
     }
   };
 
+  /**
+   * Cambia el estado de un arma por su ID.
+   *
+   * @param {Request} req - Objeto de la solicitud, que contiene el parámetro `id`.
+   * @param {Response} res - Objeto de la respuesta para confirmar la eliminación.
+   * @returns {Promise<void>} - Promesa que resuelve sin valor.
+   */
   readonly deleteWeapon = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params as { id: string };
@@ -77,6 +108,13 @@ export default class WeaponController {
     }
   };
 
+  /**
+   * Actualiza un arma por su ID con los campos proporcionados.
+   *
+   * @param {Request} req - Objeto de la solicitud, que contiene el parámetro `id` y los datos en el cuerpo.
+   * @param {Response} res - Objeto de la respuesta para confirmar la actualización.
+   * @returns {Promise<void>} - Promesa que resuelve sin valor.
+   */
   readonly updateWeapon = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params as { id: string };

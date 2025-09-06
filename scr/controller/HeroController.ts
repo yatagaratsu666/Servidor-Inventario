@@ -2,9 +2,24 @@ import { Request, Response } from 'express';
 import HeroModel from '../model/HeroModel';
 import HeroInterface from '../types/HeroInterface';
 
+/**
+ * @class HeroController
+ * @classdesc Controlador encargado de manejar las operaciones relacionadas con los héroes.
+ * Contiene métodos para obtener, crear, actualizar y eliminar héroes.
+ */
 export default class HeroController {
+  /**
+   * @constructor
+   * @param {HeroModel} heroModel - Instancia del modelo HeroModel para interactuar con la base de datos.
+   */
   constructor(private readonly heroModel: HeroModel) {}
 
+  /**
+   * @description Obtiene todos los héroes disponibles en la base de datos.
+   * @param {Request} _req - Objeto de la petición HTTP (no se utiliza en este método).
+   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @returns {Promise<void>} Devuelve un JSON con todos los héroes.
+   */
   readonly getHeroes = async (_req: Request, res: Response): Promise<void> => {
     try {
       const heroes = await this.heroModel.getAllHeroes();
@@ -14,6 +29,12 @@ export default class HeroController {
     }
   };
 
+  /**
+   * @description Obtiene un héroe específico por su ID.
+   * @param {Request} req - Objeto de la petición HTTP que contiene el parámetro `id`.
+   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @returns {Promise<void>} Devuelve el héroe encontrado o un error 404 si no existe.
+   */
   readonly getHeroById = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params as { id: string };
@@ -32,6 +53,12 @@ export default class HeroController {
     }
   };
 
+  /**
+   * @description Crea un nuevo héroe en la base de datos.
+   * @param {Request} req - Objeto de la petición HTTP que contiene los datos del héroe en el body.
+   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @returns {Promise<void>} Devuelve un mensaje de éxito y el héroe creado.
+   */
   readonly createHero = async (req: Request, res: Response): Promise<void> => {
     try {
       const hero: HeroInterface = req.body;
@@ -49,6 +76,12 @@ export default class HeroController {
     }
   };
 
+  /**
+   * @description Elimina (o desactiva) un héroe por su ID.
+   * @param {Request} req - Objeto de la petición HTTP que contiene el parámetro `id`.
+   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @returns {Promise<void>} Devuelve un mensaje de éxito o error si el héroe no existe.
+   */
   readonly deleteHero = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params as { id: string };
@@ -77,6 +110,12 @@ export default class HeroController {
     }
   };
 
+  /**
+   * @description Actualiza los datos de un héroe por su ID.
+   * @param {Request} req - Objeto de la petición HTTP que contiene el parámetro `id` y los campos a actualizar en el body.
+   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @returns {Promise<void>} Devuelve el héroe actualizado o un error si no existe.
+   */
   readonly updateHero = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params as { id: string };

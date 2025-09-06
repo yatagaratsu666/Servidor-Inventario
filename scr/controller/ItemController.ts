@@ -2,9 +2,19 @@ import { Request, Response } from "express";
 import ItemModel from "../model/ItemModel";
 import ItemInterface from "../types/ItemInterface";
 
+/**
+ * Controlador para gestionar las operaciones CRUD sobre Items.
+ */
 export default class ItemController {
   constructor(private readonly itemModel: ItemModel) {}
 
+  /**
+   * Obtiene todos los items.
+   *
+   * @param {Request} _req - Objeto de la solicitud (no usado en este caso).
+   * @param {Response} res - Objeto de la respuesta para enviar los datos.
+   * @returns {Promise<void>} - Promesa que resuelve sin valor.
+   */
   readonly getItems = async (_req: Request, res: Response): Promise<void> => {
     try {
       const item = await this.itemModel.getAllItems();
@@ -14,6 +24,13 @@ export default class ItemController {
     }
   };
 
+  /**
+   * Obtiene un item por su ID.
+   *
+   * @param {Request} req - Objeto de la solicitud, que contiene el parámetro `id`.
+   * @param {Response} res - Objeto de la respuesta para enviar el item encontrado.
+   * @returns {Promise<void>} - Promesa que resuelve sin valor.
+   */
   readonly getItemById = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params as { id: string };
@@ -32,6 +49,13 @@ export default class ItemController {
     }
   };
 
+  /**
+   * Crea un nuevo item.
+   *
+   * @param {Request} req - Objeto de la solicitud, que contiene los datos del item en el cuerpo.
+   * @param {Response} res - Objeto de la respuesta para confirmar la creación.
+   * @returns {Promise<void>} - Promesa que resuelve sin valor.
+   */
   readonly createItem = async (req: Request, res: Response): Promise<void> => {
     try {
       const hero: ItemInterface = req.body;
@@ -49,6 +73,13 @@ export default class ItemController {
     }
   };
 
+  /**
+   * Elimina un item (cambia su estado) por su ID.
+   *
+   * @param {Request} req - Objeto de la solicitud, que contiene el parámetro `id`.
+   * @param {Response} res - Objeto de la respuesta para confirmar la eliminación.
+   * @returns {Promise<void>} - Promesa que resuelve sin valor.
+   */
   readonly deleteItem = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params as { id: string };
@@ -77,6 +108,13 @@ export default class ItemController {
     }
   };
 
+  /**
+   * Actualiza un item por su ID con los campos proporcionados.
+   *
+   * @param {Request} req - Objeto de la solicitud, que contiene el parámetro `id` y los datos en el cuerpo.
+   * @param {Response} res - Objeto de la respuesta para confirmar la actualización.
+   * @returns {Promise<void>} - Promesa que resuelve sin valor.
+   */
   readonly updateItem = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params as { id: string };
