@@ -120,6 +120,11 @@
     "eslint.config.mjs", // Excluye config ESLint
     "tsconfig.build.json", // Excluye este tsconfig
     "tsconfig.tsbuildinfo", // Excluye info de build
-    "build" // Evita recursión
-  ]
+    "build",
+    "docs" // Evita recursión
+  ],
+  "typedocOptions":{
+    "entryPoints": ["scr/**/*.ts"],
+    "out": "docs"
+  }
 }

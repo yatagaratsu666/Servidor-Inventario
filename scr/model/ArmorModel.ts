@@ -2,7 +2,8 @@ import { MongoClient } from "mongodb";
 import { ArmorInterface } from "../types/ArmorInterface";
 
 /**
- * @description Modelo para gestionar operaciones CRUD de armaduras en la base de datos MongoDB.
+ * @class ArmorModel
+ * @classdesc Modelo para gestionar operaciones CRUD de armaduras en la base de datos MongoDB.
  */
 export default class ArmorModel {
   /**
@@ -38,9 +39,10 @@ export default class ArmorModel {
   }
 
   /**
+   * @async
+   * @function getAllArmors
    * @description Obtiene todas las armaduras de la colección.
-   * @method
-   * @returns {Promise<ArmorInterface[]>} Lista de armaduras.
+   * @returns {Promise<ArmorInterface[]>} Devuelve un array con todas las armaduras registradas.
    */
   readonly getAllArmors = async (): Promise<ArmorInterface[]> => {
     try {
@@ -59,10 +61,11 @@ export default class ArmorModel {
   };
 
   /**
+   * @async
+   * @function getArmorById
    * @description Obtiene una armadura por su ID.
-   * @method
    * @param {number} id - ID de la armadura a buscar.
-   * @returns {Promise<ArmorInterface | null>} Armadura encontrada o null si no existe.
+   * @returns {Promise<ArmorInterface | null>} Devuelve la armadura encontrada o null si no existe.
    */
   readonly getArmorById = async (id: number): Promise<ArmorInterface | null> => {
     try {
@@ -81,10 +84,11 @@ export default class ArmorModel {
   };
 
   /**
+   * @async
+   * @function createArmor
    * @description Crea una nueva armadura en la colección.
-   * @method
    * @param {ArmorInterface} armor - Datos de la armadura a crear.
-   * @returns {Promise<void>}
+   * @returns {Promise<void>} Devuelve void.
    */
   readonly createArmor = async (armor: ArmorInterface): Promise<void> => {
     try {
@@ -113,10 +117,11 @@ export default class ArmorModel {
   };
 
   /**
+   * @async
+   * @function toggleArmorStatusById
    * @description Cambia el estado (activo/inactivo) de una armadura por su ID.
-   * @method
    * @param {number} id - ID de la armadura a actualizar.
-   * @returns {Promise<boolean>} True si se actualizó, False si no se encontró.
+   * @returns {Promise<boolean>} True si se actualizó correctamente, False si no se encontró la armadura.
    */
   readonly toggleArmorStatusById = async (id: number): Promise<boolean> => {
     try {
@@ -154,11 +159,12 @@ export default class ArmorModel {
   };
 
   /**
-   * @description Actualiza una armadura por su ID.
-   * @method
+   * @async
+   * @function updateArmorById
+   * @description Actualiza los campos de una armadura por su ID.
    * @param {number} id - ID de la armadura a actualizar.
-   * @param {Partial<ArmorInterface>} updatedArmor - Campos a actualizar en la armadura.
-   * @returns {Promise<ArmorInterface | null>} Armadura actualizada o null si no existe.
+   * @param {Partial<ArmorInterface>} updatedArmor - Campos a actualizar.
+   * @returns {Promise<ArmorInterface | null>} Devuelve la armadura actualizada o null si no existe.
    */
   readonly updateArmorById = async (
     id: number,

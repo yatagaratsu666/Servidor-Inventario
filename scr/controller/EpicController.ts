@@ -9,15 +9,16 @@ import { EpicInterface } from "../types/EpicInterface";
  */
 export default class EpicController {
   /**
-   * @constructor
-   * @param {EpicModel} epicModel - Instancia del modelo EpicModel para interactuar con la base de datos.
+   * @param {EpicModel} epicModel Instancia del modelo `EpicModel` para interactuar con la base de datos.
    */
   constructor(private readonly epicModel: EpicModel) {}
 
   /**
+   * @async
+   * @function getEpics
    * @description Obtiene todas las épicas disponibles en la base de datos.
-   * @param {Request} _req - Objeto de la petición HTTP (no se utiliza en este método).
-   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @param {_req} _req Objeto de la petición HTTP (no se utiliza en este método).
+   * @param {Response} res Objeto de la respuesta HTTP.
    * @returns {Promise<void>} Devuelve un JSON con todas las épicas registradas.
    */
   readonly getEpics = async (_req: Request, res: Response): Promise<void> => {
@@ -30,9 +31,11 @@ export default class EpicController {
   };
 
   /**
+   * @async
+   * @function getEpicById
    * @description Obtiene una épica específica por su ID.
-   * @param {Request} req - Objeto de la petición HTTP que contiene el parámetro `id`.
-   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @param {Request} req Objeto de la petición HTTP que contiene el parámetro `id`.
+   * @param {Response} res Objeto de la respuesta HTTP.
    * @returns {Promise<void>} Devuelve la épica encontrada o un error 404 si no existe.
    */
   readonly getEpicById = async (req: Request, res: Response): Promise<void> => {
@@ -54,10 +57,27 @@ export default class EpicController {
   };
 
   /**
+   * @async
+   * @function createEpic
    * @description Crea una nueva épica en la base de datos.
-   * @param {Request} req - Objeto de la petición HTTP que contiene los datos de la épica en el body.
-   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @param {Request} req Objeto de la petición HTTP que contiene los datos de la épica en el body.
+   * @param {Response} res Objeto de la respuesta HTTP.
    * @returns {Promise<void>} Devuelve un mensaje de éxito y la épica creada.
+   * @example
+   * // Body de ejemplo para la creación
+   * {
+   *   "name": "Espada Épica",
+   *   "heroType": "guerrero",
+   *   "description": "Aumenta el ataque del héroe en 20 puntos",
+   *   "status": true,
+   *   "stock": 5,
+   *   "effects": [
+   *     { "effectType": "daño", "value": 10, "durationTurns": 0 }
+   *   ],
+   *   "cooldown": 2,
+   *   "isAvailable": true,
+   *   "masterChance": 0.1
+   * }
    */
   readonly createEpic = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -77,9 +97,11 @@ export default class EpicController {
   };
 
   /**
+   * @async
+   * @function deleteEpic
    * @description Elimina (o desactiva) una épica por su ID.
-   * @param {Request} req - Objeto de la petición HTTP que contiene el parámetro `id`.
-   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @param {Request} req Objeto de la petición HTTP que contiene el parámetro `id`.
+   * @param {Response} res Objeto de la respuesta HTTP.
    * @returns {Promise<void>} Devuelve un mensaje de éxito o error si la épica no existe.
    */
   readonly deleteEpic = async (req: Request, res: Response): Promise<void> => {
@@ -111,10 +133,21 @@ export default class EpicController {
   };
 
   /**
+   * @async
+   * @function updateEpic
    * @description Actualiza los datos de una épica por su ID.
-   * @param {Request} req - Objeto de la petición HTTP que contiene el parámetro `id` y los campos a actualizar en el body.
-   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @param {Request} req Objeto de la petición HTTP que contiene el parámetro `id` y los campos a actualizar en body.
+   * @param {Response} res Objeto de la respuesta HTTP.
    * @returns {Promise<void>} Devuelve la épica actualizada o un error si no existe.
+   * @example
+   * // Body de ejemplo para actualización
+   * {
+   *   "name": "Espada Épica Mejorada",
+   *   "stock": 10,
+   *   "effects": [
+   *     { "effectType": "defensa", "value": 15, "durationTurns": 0 }
+   *   ]
+   * }
    */
   readonly updateEpic = async (req: Request, res: Response): Promise<void> => {
     try {

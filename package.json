@@ -21,7 +21,8 @@
     "security": "npm run audit && npm run dep-check",
     "dep-check": "depcheck --ignores='@types/*,jest,typescript'",
     "clean": "rimraf build coverage reports",
-    "complexity": "plato -r -d reports/complexity build/scr/"
+    "complexity": "plato -r -d reports/complexity build/scr/",
+    "docs": "npx typedoc"
   },
   "keywords": [],
   "author": "",
@@ -33,6 +34,8 @@
     "@types/express": "^5.0.3",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.3.0",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "cross-env": "^7.0.3",
     "eslint": "^9.34.0",
     "globals": "^16.3.0",
@@ -43,6 +46,7 @@
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
+    "typedoc": "^0.28.12",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.42.0"
   },
@@ -53,6 +57,8 @@
     "express": "^5.1.0",
     "mongodb": "^6.18.0",
     "socket.io": "^4.8.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "typhonjs-escomplex": "^0.1.0"
   }
 }

@@ -9,16 +9,17 @@ import HeroInterface from '../types/HeroInterface';
  */
 export default class HeroController {
   /**
-   * @constructor
-   * @param {HeroModel} heroModel - Instancia del modelo HeroModel para interactuar con la base de datos.
+   * @param {HeroModel} heroModel Instancia del modelo `HeroModel` para interactuar con la base de datos.
    */
   constructor(private readonly heroModel: HeroModel) {}
 
   /**
+   * @async
+   * @function getHeroes
    * @description Obtiene todos los héroes disponibles en la base de datos.
-   * @param {Request} _req - Objeto de la petición HTTP (no se utiliza en este método).
-   * @param {Response} res - Objeto de la respuesta HTTP.
-   * @returns {Promise<void>} Devuelve un JSON con todos los héroes.
+   * @param {Request} _req Objeto de la petición HTTP (no se utiliza en este método).
+   * @param {Response} res Objeto de la respuesta HTTP.
+   * @returns {Promise<void>} Devuelve un JSON con todos los héroes registrados.
    */
   readonly getHeroes = async (_req: Request, res: Response): Promise<void> => {
     try {
@@ -30,9 +31,11 @@ export default class HeroController {
   };
 
   /**
+   * @async
+   * @function getHeroById
    * @description Obtiene un héroe específico por su ID.
-   * @param {Request} req - Objeto de la petición HTTP que contiene el parámetro `id`.
-   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @param {Request} req Objeto de la petición HTTP que contiene el parámetro `id`.
+   * @param {Response} res Objeto de la respuesta HTTP.
    * @returns {Promise<void>} Devuelve el héroe encontrado o un error 404 si no existe.
    */
   readonly getHeroById = async (req: Request, res: Response): Promise<void> => {
@@ -54,10 +57,32 @@ export default class HeroController {
   };
 
   /**
+   * @async
+   * @function createHero
    * @description Crea un nuevo héroe en la base de datos.
-   * @param {Request} req - Objeto de la petición HTTP que contiene los datos del héroe en el body.
-   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @param {Request} req Objeto de la petición HTTP que contiene los datos del héroe en el body.
+   * @param {Response} res Objeto de la respuesta HTTP.
    * @returns {Promise<void>} Devuelve un mensaje de éxito y el héroe creado.
+   * @example
+   * // Body de ejemplo para la creación
+   * {
+   *   "name": "Guerrero Valiente",
+   *   "heroType": "guerrero",
+   *   "description": "Aumenta la defensa del equipo",
+   *   "level": 1,
+   *   "power": 50,
+   *   "health": 200,
+   *   "defense": 30,
+   *   "status": true,
+   *   "stock": 1,
+   *   "attack": 25,
+   *   "attackBoost": { "min": 5, "max": 10 },
+   *   "damage": { "min": 10, "max": 20 },
+   *   "specialActions": [
+   *     { "name": "Golpe Especial", "actionType": "ataque", "powerCost": 10, "cooldown": 2, "isAvailable": true }
+   *   ],
+   *   "effect": { "effectType": "", "value": 0, "durationTurns": 0 }
+   * }
    */
   readonly createHero = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -77,9 +102,11 @@ export default class HeroController {
   };
 
   /**
+   * @async
+   * @function deleteHero
    * @description Elimina (o desactiva) un héroe por su ID.
-   * @param {Request} req - Objeto de la petición HTTP que contiene el parámetro `id`.
-   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @param {Request} req Objeto de la petición HTTP que contiene el parámetro `id`.
+   * @param {Response} res Objeto de la respuesta HTTP.
    * @returns {Promise<void>} Devuelve un mensaje de éxito o error si el héroe no existe.
    */
   readonly deleteHero = async (req: Request, res: Response): Promise<void> => {
@@ -111,10 +138,32 @@ export default class HeroController {
   };
 
   /**
+   * @async
+   * @function updateHero
    * @description Actualiza los datos de un héroe por su ID.
-   * @param {Request} req - Objeto de la petición HTTP que contiene el parámetro `id` y los campos a actualizar en el body.
-   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @param {Request} req Objeto de la petición HTTP que contiene el parámetro `id` y los campos a actualizar en body.
+   * @param {Response} res Objeto de la respuesta HTTP.
    * @returns {Promise<void>} Devuelve el héroe actualizado o un error si no existe.
+   * @example
+   * // Body de ejemplo para actualización
+   * {
+   *   "name": "Guerrero Valiente",
+   *   "heroType": "guerrero",
+   *   "description": "Disminuye la defensa del equipo",
+   *   "level": 1,
+   *   "power": 50,
+   *   "health": 200,
+   *   "defense": 30,
+   *   "status": true,
+   *   "stock": 1,
+   *   "attack": 25,
+   *   "attackBoost": { "min": 5, "max": 10 },
+   *   "damage": { "min": 10, "max": 20 },
+   *   "specialActions": [
+   *     { "name": "Golpe Especial", "actionType": "ataque", "powerCost": 10, "cooldown": 2, "isAvailable": true }
+   *   ],
+   *   "effect": { "effectType": "", "value": 0, "durationTurns": 0 }
+   * }
    */
   readonly updateHero = async (req: Request, res: Response): Promise<void> => {
     try {

@@ -2,49 +2,71 @@ import { MongoClient } from "mongodb";
 import { EpicInterface } from "../types/EpicInterface";
 
 /**
- * Clase EpicModel
- * Se encarga de gestionar todas las operaciones relacionadas con las épicas en la base de datos MongoDB.
- * Implementa métodos CRUD: obtener, crear, actualizar y cambiar estado de las épicas.
+ * @class EpicModel
+ * @classdesc Modelo para gestionar operaciones CRUD de épicas en la base de datos MongoDB.
+ * Contiene métodos para obtener, crear, actualizar y cambiar el estado de las épicas.
  */
 export default class EpicModel {
-  // URI de conexión a MongoDB obtenida desde variables de entorno
+  /**
+   * URI de conexión a MongoDB.
+   * @private
+   */
   private uri = process.env.MONGO_URI!;
-  // Nombre de la base de datos definido en variables de entorno
+
+  /**
+   * Nombre de la base de datos en MongoDB.
+   * @private
+   */
   private dbName = process.env.MONGO_DB!;
-  // Nombre de la colección donde se guardan las épicas
+
+  /**
+   * Nombre de la colección de épicas en MongoDB.
+   * @private
+   */
   private collectionName = process.env.MONGO_COLLECTION_EPICAS!;
-  // Cliente de conexión a MongoDB
+
+  /**
+   * Cliente de conexión a MongoDB.
+   * @private
+   */
   private client: MongoClient;
 
+  /**
+   * @constructor
+   * Inicializa el cliente de conexión a MongoDB.
+   */
   constructor() {
-    // Inicializa el cliente de MongoDB con la URI
     this.client = new MongoClient(this.uri);
   }
 
   /**
-   * Obtiene todas las épicas de la base de datos.
-   * @returns Lista de épicas como un arreglo de EpicInterface.
+   * @async
+   * @function getAllEpics
+   * @description Obtiene todas las épicas registradas en la colección.
+   * @returns {Promise<EpicInterface[]>} Devuelve un array con todas las épicas.
    */
   readonly getAllEpics = async (): Promise<EpicInterface[]> => {
     try {
-      await this.client.connect(); // Conexión al servidor MongoDB
+      await this.client.connect();
       const db = this.client.db(this.dbName);
       const collection = db.collection<EpicInterface>(this.collectionName);
 
-      const heroes = await collection.find({}).toArray(); // Busca todas las épicas
+      const heroes = await collection.find({}).toArray();
       return heroes;
     } catch (error) {
       console.error("Error al obtener epicas:", error);
       return [];
     } finally {
-      await this.client.close(); // Cierra la conexión
+      await this.client.close();
     }
   };
 
   /**
-   * Obtiene una épica por su ID.
-   * @param id - Identificador de la épica a buscar.
-   * @returns La épica encontrada o null si no existe.
+   * @async
+   * @function getEpicById
+   * @description Obtiene una épica por su ID.
+   * @param {number} id - ID de la épica a buscar.
+   * @returns {Promise<EpicInterface | null>} Devuelve la épica encontrada o null si no existe.
    */
   readonly getEpicById = async (id: number): Promise<EpicInterface | null> => {
     try {
@@ -63,9 +85,11 @@ export default class EpicModel {
   };
 
   /**
-   * Crea una nueva épica en la base de datos.
-   * Genera un ID incremental automáticamente.
-   * @param epic - Datos de la épica a crear.
+   * @async
+   * @function createEpic
+   * @description Crea una nueva épica en la colección con un ID incremental automático.
+   * @param {EpicInterface} epic - Datos de la épica a crear.
+   * @returns {Promise<void>}
    */
   readonly createEpic = async (epic: EpicInterface): Promise<void> => {
     try {
@@ -73,7 +97,6 @@ export default class EpicModel {
       const db = this.client.db(this.dbName);
       const collection = db.collection<EpicInterface>(this.collectionName);
 
-      // Busca el último ID para asignar el siguiente
       const lastHero = await collection
         .find()
         .sort({ id: -1 })
@@ -95,9 +118,11 @@ export default class EpicModel {
   };
 
   /**
-   * Cambia el estado (activo/inactivo) de una épica por su ID.
-   * @param id - Identificador de la épica.
-   * @returns true si se modificó el estado, false en caso contrario.
+   * @async
+   * @function toggleEpicStatusById
+   * @description Cambia el estado (activo/inactivo) de una épica por su ID.
+   * @param {number} id - ID de la épica a actualizar.
+   * @returns {Promise<boolean>} True si se modificó correctamente, False si no se encontró la épica.
    */
   readonly toggleEpicStatusById = async (id: number): Promise<boolean> => {
     try {
@@ -112,7 +137,6 @@ export default class EpicModel {
         return false;
       }
 
-      // Invierte el estado actual
       const newStatus = !epic.status;
 
       const result = await collection.updateOne(
@@ -136,10 +160,12 @@ export default class EpicModel {
   };
 
   /**
-   * Actualiza una épica existente por su ID.
-   * @param id - Identificador de la épica a actualizar.
-   * @param updatedEpic - Objeto parcial con los campos a modificar.
-   * @returns La épica actualizada o null si no se encontró.
+   * @async
+   * @function updateEpicById
+   * @description Actualiza los campos de una épica existente por su ID.
+   * @param {number} id - ID de la épica a actualizar.
+   * @param {Partial<EpicInterface>} updatedEpic - Campos a actualizar.
+   * @returns {Promise<EpicInterface | null>} Devuelve la épica actualizada o null si no existe.
    */
   readonly updateEpicById = async (
     id: number,
@@ -162,7 +188,6 @@ export default class EpicModel {
 
       console.log(`epica con id ${id} actualizado con éxito`);
 
-      // Devuelve el documento actualizado
       const updatedDoc = await collection.findOne({ id });
       return updatedDoc;
     } catch (error) {

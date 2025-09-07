@@ -7,10 +7,12 @@ import ArmorView from "../view/ArmorView";
 import path from "path";
 import cors from "cors";
 import { environment } from "../enviroment/enviroment";
+import { swaggerDocs } from "../swagger/Swagger";
 
 /**
- * @description Clase que configura y gestiona el servidor Express.
- * Se encarga de aplicar middlewares, definir rutas y servir archivos estáticos.
+ * @class Server
+ * @classdesc Clase que configura y gestiona el servidor Express. 
+ * Se encarga de aplicar middlewares, definir rutas, servir archivos estáticos y habilitar documentación Swagger.
  */
 export default class Server {
   /**
@@ -39,11 +41,16 @@ export default class Server {
     this.configure();
     this.routes();
     this.static();
+    this.docs();
   }
 
   /**
-   * @description Configura middlewares globales del servidor (CORS, JSON, URL encoding).
-   * @method
+   * @async
+   * @function configure
+   * @description Configura los middlewares globales del servidor, incluyendo:
+   * - CORS con validación de orígenes permitidos.
+   * - Middleware para parsear JSON con límite de 10mb.
+   * - Middleware para parsear datos de formularios con límite de 10mb.
    * @returns {void}
    */
   readonly configure = (): void => {
@@ -61,15 +68,14 @@ export default class Server {
       })
     );
 
-    // Middleware para parsear JSON con límite de 10mb
     this.app.use(express.json({ limit: "10mb" }));
-    // Middleware para parsear datos de formularios
     this.app.use(express.urlencoded({ extended: true, limit: "10mb" }));
   };
 
   /**
-   * @description Define las rutas principales del servidor, asociando las vistas.
-   * @method
+   * @async
+   * @function routes
+   * @description Define las rutas principales del servidor y asocia cada vista con su router correspondiente.
    * @returns {void}
    */
   readonly routes = (): void => {
@@ -81,17 +87,32 @@ export default class Server {
   };
 
   /**
-   * @description Sirve archivos estáticos desde la carpeta definida en `environment.staticPath`.
-   * @method
+   * @async
+   * @function static
+   * @description Sirve archivos estáticos desde la ruta definida en `environment.staticPath`.
    * @returns {void}
    */
   readonly static = (): void => {
-    this.app.use(express.static(path.join(__dirname, "../../", environment.staticPath)));
+    this.app.use(
+      express.static(path.join(__dirname, "../../", environment.staticPath))
+    );
   };
 
   /**
-   * @description Inicia el servidor en el puerto especificado en `environment.port`.
-   * @method
+   * @async
+   * @function docs
+   * @description Activa la documentación Swagger en la ruta `/api-docs` utilizando la configuración de `swaggerDocs`.
+   * @returns {void}
+   */
+  readonly docs = (): void => {
+    swaggerDocs(this.app, environment.port);
+  };
+
+  /**
+   * @async
+   * @function start
+   * @description Inicia el servidor en el puerto definido en `environment.port` y escucha conexiones en `0.0.0.0`.
+   * Imprime un mensaje en consola indicando que el servidor está corriendo.
    * @returns {void}
    */
   readonly start = (): void => {

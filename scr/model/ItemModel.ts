@@ -2,49 +2,71 @@ import { MongoClient } from "mongodb";
 import ItemInterface from "../types/ItemInterface";
 
 /**
- * Clase ItemModel
- * Maneja todas las operaciones CRUD relacionadas con los ítems en la base de datos MongoDB.
- * Incluye métodos para obtener, crear, actualizar y cambiar el estado de un ítem.
+ * @class ItemModel
+ * @classdesc Modelo para gestionar operaciones CRUD de ítems en la base de datos MongoDB.
+ * Contiene métodos para obtener, crear, actualizar y cambiar el estado de los ítems.
  */
 export default class ItemModel {
-  // URI de conexión a MongoDB definida en las variables de entorno
+  /**
+   * URI de conexión a MongoDB.
+   * @private
+   */
   private uri = process.env.MONGO_URI!;
-  // Nombre de la base de datos
+
+  /**
+   * Nombre de la base de datos en MongoDB.
+   * @private
+   */
   private dbName = process.env.MONGO_DB!;
-  // Nombre de la colección de ítems
+
+  /**
+   * Nombre de la colección de ítems en MongoDB.
+   * @private
+   */
   private collectionName = process.env.MONGO_COLLECTION_ITEMS!;
-  // Cliente de conexión a MongoDB
+
+  /**
+   * Cliente de conexión a MongoDB.
+   * @private
+   */
   private client: MongoClient;
 
+  /**
+   * @constructor
+   * Inicializa el cliente de conexión a MongoDB.
+   */
   constructor() {
-    // Inicializa el cliente de MongoDB con la URI configurada
     this.client = new MongoClient(this.uri);
   }
 
   /**
-   * Obtiene todos los ítems de la base de datos.
-   * @returns Un arreglo de ítems (ItemInterface[]).
+   * @async
+   * @function getAllItems
+   * @description Obtiene todos los ítems registrados en la colección.
+   * @returns {Promise<ItemInterface[]>} Devuelve un array con todos los ítems.
    */
   readonly getAllItems = async (): Promise<ItemInterface[]> => {
     try {
-      await this.client.connect(); // Conexión con el servidor
+      await this.client.connect();
       const db = this.client.db(this.dbName);
       const collection = db.collection<ItemInterface>(this.collectionName);
 
-      const heroes = await collection.find({}).toArray(); // Busca todos los documentos
-      return heroes;
+      const items = await collection.find({}).toArray();
+      return items;
     } catch (error) {
-      console.error("Error al obtener héroes:", error);
+      console.error("Error al obtener ítems:", error);
       return [];
     } finally {
-      await this.client.close(); // Cierra la conexión
+      await this.client.close();
     }
   };
 
   /**
-   * Obtiene un ítem específico por su ID.
-   * @param id - Identificador del ítem.
-   * @returns El ítem encontrado o null si no existe.
+   * @async
+   * @function getItemById
+   * @description Obtiene un ítem por su ID.
+   * @param {number} id - ID del ítem a buscar.
+   * @returns {Promise<ItemInterface | null>} Devuelve el ítem encontrado o null si no existe.
    */
   readonly getItemById = async (id: number): Promise<ItemInterface | null> => {
     try {
@@ -52,10 +74,10 @@ export default class ItemModel {
       const db = this.client.db(this.dbName);
       const collection = db.collection<ItemInterface>(this.collectionName);
 
-      const hero = await collection.findOne({ id: Number(id) });
-      return hero;
+      const item = await collection.findOne({ id: Number(id) });
+      return item;
     } catch (error) {
-      console.error("Error al obtener item por ID:", error);
+      console.error("Error al obtener ítem por ID:", error);
       return null;
     } finally {
       await this.client.close();
@@ -63,32 +85,32 @@ export default class ItemModel {
   };
 
   /**
-   * Crea un nuevo ítem en la base de datos.
-   * Genera un nuevo ID de forma incremental.
-   * @param hero - Datos del ítem a insertar.
+   * @async
+   * @function createItem
+   * @description Crea un nuevo ítem en la colección con un ID incremental automático.
+   * @param {ItemInterface} item - Datos del ítem a crear.
+   * @returns {Promise<void>}
    */
-  readonly createItem = async (hero: ItemInterface): Promise<void> => {
+  readonly createItem = async (item: ItemInterface): Promise<void> => {
     try {
       await this.client.connect();
       const db = this.client.db(this.dbName);
       const collection = db.collection<ItemInterface>(this.collectionName);
 
-      // Busca el último ítem por ID descendente
-      const lastHero = await collection
+      const lastItem = await collection
         .find()
         .sort({ id: -1 })
         .limit(1)
         .toArray();
 
-      // Si no existe, inicia en 0; luego incrementa en 1
-      const newId = (lastHero.at(0)?.id ?? 0) + 1;
+      const newId = (lastItem.at(0)?.id ?? 0) + 1;
 
-      const heroToInsert = { ...hero, id: newId };
+      const itemToInsert = { ...item, id: newId };
 
-      await collection.insertOne(heroToInsert);
-      console.log("Héroe creado con éxito:", heroToInsert);
+      await collection.insertOne(itemToInsert);
+      console.log("Ítem creado con éxito:", itemToInsert);
     } catch (error) {
-      console.error("Error al crear héroe:", error);
+      console.error("Error al crear ítem:", error);
       throw error;
     } finally {
       await this.client.close();
@@ -96,9 +118,11 @@ export default class ItemModel {
   };
 
   /**
-   * Cambia el estado (activo/inactivo) de un ítem por su ID.
-   * @param id - Identificador del ítem.
-   * @returns true si se actualizó el estado, false en caso contrario.
+   * @async
+   * @function toggleItemStatusById
+   * @description Cambia el estado (activo/inactivo) de un ítem por su ID.
+   * @param {number} id - ID del ítem a actualizar.
+   * @returns {Promise<boolean>} True si se modificó correctamente, False si no se encontró el ítem.
    */
   readonly toggleItemStatusById = async (id: number): Promise<boolean> => {
     try {
@@ -106,15 +130,13 @@ export default class ItemModel {
       const db = this.client.db(this.dbName);
       const collection = db.collection<ItemInterface>(this.collectionName);
 
-      // Busca el ítem actual
       const item = await collection.findOne({ id });
 
       if (!item) {
-        console.log(`No se encontró item con id ${id}`);
+        console.log(`No se encontró ítem con id ${id}`);
         return false;
       }
 
-      // Invierte el estado actual
       const newStatus = !item.status;
 
       const result = await collection.updateOne(
@@ -123,14 +145,14 @@ export default class ItemModel {
       );
 
       if (result.modifiedCount && result.modifiedCount > 0) {
-        console.log(`Item con id ${id} cambiado a status = ${newStatus}`);
+        console.log(`Ítem con id ${id} cambiado a status = ${newStatus}`);
         return true;
       } else {
-        console.log(`No se pudo actualizar el item con id ${id}`);
+        console.log(`No se pudo actualizar el ítem con id ${id}`);
         return false;
       }
     } catch (error) {
-      console.error("Error al cambiar el status del item:", error);
+      console.error("Error al cambiar el status del ítem:", error);
       throw error;
     } finally {
       await this.client.close();
@@ -138,10 +160,12 @@ export default class ItemModel {
   };
 
   /**
-   * Actualiza un ítem por su ID con los nuevos valores proporcionados.
-   * @param id - Identificador del ítem.
-   * @param updatedItem - Campos a actualizar (parcial de ItemInterface).
-   * @returns El ítem actualizado o null si no se encontró.
+   * @async
+   * @function updateItemById
+   * @description Actualiza un ítem por su ID con los campos proporcionados.
+   * @param {number} id - ID del ítem a actualizar.
+   * @param {Partial<ItemInterface>} updatedItem - Campos a actualizar.
+   * @returns {Promise<ItemInterface | null>} Devuelve el ítem actualizado o null si no existe.
    */
   readonly updateItemById = async (
     id: number,
@@ -152,24 +176,22 @@ export default class ItemModel {
       const db = this.client.db(this.dbName);
       const collection = db.collection<ItemInterface>(this.collectionName);
 
-      // Actualiza el documento
       const updateResult = await collection.updateOne(
         { id },
         { $set: updatedItem }
       );
 
       if (updateResult.matchedCount === 0) {
-        console.log(`No se encontró item con id ${id}`);
+        console.log(`No se encontró ítem con id ${id}`);
         return null;
       }
 
-      console.log(`Item con id ${id} actualizado con éxito`);
+      console.log(`Ítem con id ${id} actualizado con éxito`);
 
-      // Devuelve el documento actualizado
       const updatedDoc = await collection.findOne({ id });
       return updatedDoc;
     } catch (error) {
-      console.error("Error al actualizar item:", error);
+      console.error("Error al actualizar ítem:", error);
       throw error;
     } finally {
       await this.client.close();

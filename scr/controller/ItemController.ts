@@ -3,17 +3,24 @@ import ItemModel from "../model/ItemModel";
 import ItemInterface from "../types/ItemInterface";
 
 /**
- * Controlador para gestionar las operaciones CRUD sobre Items.
+ * @class ItemController
+ * @classdesc Controlador encargado de manejar las operaciones CRUD relacionadas con los items.
+ * Proporciona métodos para obtener, crear, actualizar y eliminar items.
  */
 export default class ItemController {
+
+    /**
+   * @param {ItemModel} itemModel Instancia del modelo `ItemModel` para interactuar con la base de datos.
+   */
   constructor(private readonly itemModel: ItemModel) {}
 
   /**
-   * Obtiene todos los items.
-   *
-   * @param {Request} _req - Objeto de la solicitud (no usado en este caso).
-   * @param {Response} res - Objeto de la respuesta para enviar los datos.
-   * @returns {Promise<void>} - Promesa que resuelve sin valor.
+   * @async
+   * @function getItems
+   * @description Obtiene todos los items disponibles en la base de datos.
+   * @param {_req} _req Objeto de la solicitud HTTP (no se utiliza en este método).
+   * @param {Response} res Objeto de la respuesta HTTP.
+   * @returns {Promise<void>} Devuelve un JSON con todos los items registrados.
    */
   readonly getItems = async (_req: Request, res: Response): Promise<void> => {
     try {
@@ -25,11 +32,12 @@ export default class ItemController {
   };
 
   /**
-   * Obtiene un item por su ID.
-   *
-   * @param {Request} req - Objeto de la solicitud, que contiene el parámetro `id`.
-   * @param {Response} res - Objeto de la respuesta para enviar el item encontrado.
-   * @returns {Promise<void>} - Promesa que resuelve sin valor.
+   * @async
+   * @function getItemById
+   * @description Obtiene un item específico por su ID.
+   * @param {Request} req Objeto de la solicitud HTTP que contiene el parámetro `id`.
+   * @param {Response} res Objeto de la respuesta HTTP.
+   * @returns {Promise<void>} Devuelve el item encontrado o un error 404 si no existe.
    */
   readonly getItemById = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -50,11 +58,25 @@ export default class ItemController {
   };
 
   /**
-   * Crea un nuevo item.
-   *
-   * @param {Request} req - Objeto de la solicitud, que contiene los datos del item en el cuerpo.
-   * @param {Response} res - Objeto de la respuesta para confirmar la creación.
-   * @returns {Promise<void>} - Promesa que resuelve sin valor.
+   * @async
+   * @function createItem
+   * @description Crea un nuevo item en la base de datos.
+   * @param {Request} req Objeto de la solicitud HTTP que contiene los datos del item en el cuerpo.
+   * @param {Response} res Objeto de la respuesta HTTP.
+   * @returns {Promise<void>} Devuelve un mensaje de éxito y el item creado.
+   * @example
+   * // Body de ejemplo para creación
+   * {
+   *   "name": "Armadura del Dragón",
+   *   "heroType": "guerrero",
+   *   "description": "Proporciona alta defensa y resistencia al fuego",
+   *   "status": true,
+   *   "stock": 5,
+   *   "effects": [
+   *     { "effectType": "defensa", "value": 20, "durationTurns": 0 }
+   *   ],
+   *   "dropRate": 0.15
+   * }
    */
   readonly createItem = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -74,11 +96,12 @@ export default class ItemController {
   };
 
   /**
-   * Elimina un item (cambia su estado) por su ID.
-   *
-   * @param {Request} req - Objeto de la solicitud, que contiene el parámetro `id`.
-   * @param {Response} res - Objeto de la respuesta para confirmar la eliminación.
-   * @returns {Promise<void>} - Promesa que resuelve sin valor.
+   * @async
+   * @function deleteItem
+   * @description Elimina (o desactiva) un item por su ID.
+   * @param {Request} req Objeto de la solicitud HTTP que contiene el parámetro `id`.
+   * @param {Response} res Objeto de la respuesta HTTP.
+   * @returns {Promise<void>} Devuelve un mensaje de éxito o error si el item no existe.
    */
   readonly deleteItem = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -109,11 +132,25 @@ export default class ItemController {
   };
 
   /**
-   * Actualiza un item por su ID con los campos proporcionados.
-   *
-   * @param {Request} req - Objeto de la solicitud, que contiene el parámetro `id` y los datos en el cuerpo.
-   * @param {Response} res - Objeto de la respuesta para confirmar la actualización.
-   * @returns {Promise<void>} - Promesa que resuelve sin valor.
+   * @async
+   * @function updateItem
+   * @description Actualiza los datos de un item por su ID con los campos proporcionados en el cuerpo.
+   * @param {Request} req Objeto de la solicitud HTTP que contiene el parámetro `id` y los campos a actualizar.
+   * @param {Response} res Objeto de la respuesta HTTP.
+   * @returns {Promise<void>} Devuelve el item actualizado o un error si no existe.
+   * @example
+   * // Body de ejemplo para actualización
+   * {
+   *   "name": "Armadura del Dragón",
+   *   "heroType": "medico",
+   *   "description": "Proporciona alta defensa y resistencia al fuego",
+   *   "status": true,
+   *   "stock": 5,
+   *   "effects": [
+   *     { "effectType": "defensa", "value": 20, "durationTurns": 0 }
+   *   ],
+   *   "dropRate": 0.15
+   * }
    */
   readonly updateItem = async (req: Request, res: Response): Promise<void> => {
     try {

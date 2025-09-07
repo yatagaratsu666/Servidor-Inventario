@@ -9,15 +9,16 @@ import { ArmorInterface } from "../types/ArmorInterface";
  */
 export default class ArmorController {
   /**
-   * @constructor
-   * @param {ArmorModel} armorModel - Instancia del modelo ArmorModel para interactuar con la base de datos.
+   * @param {ArmorModel} armorModel Instancia del modelo `ArmorModel` para interactuar con la base de datos.
    */
   constructor(private readonly armorModel: ArmorModel) {}
 
   /**
+   * @async
+   * @function getArmor
    * @description Obtiene todas las armaduras disponibles en la base de datos.
-   * @param {Request} _req - Objeto de la petición HTTP (no se utiliza en este caso).
-   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @param {_req} _req Objeto de la petición HTTP (no se utiliza en este caso).
+   * @param {Response} res Objeto de la respuesta HTTP.
    * @returns {Promise<void>} Devuelve un JSON con todas las armaduras.
    */
   readonly getArmor = async (_req: Request, res: Response): Promise<void> => {
@@ -30,9 +31,11 @@ export default class ArmorController {
   };
 
   /**
+   * @async
+   * @function getArmorById
    * @description Obtiene una armadura específica por su ID.
-   * @param {Request} req - Objeto de la petición HTTP que contiene el parámetro `id`.
-   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @param {Request} req Objeto de la petición HTTP que contiene el parámetro `id`.
+   * @param {Response} res Objeto de la respuesta HTTP.
    * @returns {Promise<void>} Devuelve la armadura encontrada o un error 404 si no existe.
    */
   readonly getArmorById = async (req: Request, res: Response): Promise<void> => {
@@ -43,7 +46,7 @@ export default class ArmorController {
       const armor = await this.armorModel.getArmorById(armorId);
 
       if (!armor) {
-        res.status(404).json({ message: "armadura no encontrada" });
+        res.status(404).json({ message: "No se obtener la armadura" });
         return;
       }
 
@@ -54,10 +57,26 @@ export default class ArmorController {
   };
 
   /**
+   * @async
+   * @function createArmor
    * @description Crea una nueva armadura en la base de datos.
-   * @param {Request} req - Objeto de la petición HTTP que contiene los datos de la armadura en el body.
-   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @param {Request} req Objeto de la petición HTTP que contiene los datos de la armadura en `body`.
+   * @param {Response} res Objeto de la respuesta HTTP.
    * @returns {Promise<void>} Devuelve un mensaje de éxito y la armadura creada.
+   * @example
+   * // Body de ejemplo para la creación
+   * {
+   *   "name": "Armadura del Dragón",
+   *   "armorType": "pesada",
+   *   "heroType": "guerrero",
+   *   "description": "Proporciona alta defensa y resistencia al fuego",
+   *   "status": true,
+   *   "stock": 5,
+   *   "effects": [
+   *     { "effectType": "defensa", "value": 20, "durationTurns": 0 }
+   *   ],
+   *   "dropRate": 0.15
+   * }
    */
   readonly createArmor = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -77,9 +96,11 @@ export default class ArmorController {
   };
 
   /**
+   * @async
+   * @function deleteArmor
    * @description Elimina (o desactiva) una armadura por su ID.
-   * @param {Request} req - Objeto de la petición HTTP que contiene el parámetro `id`.
-   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @param {Request} req Objeto de la petición HTTP que contiene el parámetro `id`.
+   * @param {Response} res Objeto de la respuesta HTTP.
    * @returns {Promise<void>} Devuelve un mensaje de éxito o error si la armadura no existe.
    */
   readonly deleteArmor = async (req: Request, res: Response): Promise<void> => {
@@ -111,10 +132,26 @@ export default class ArmorController {
   };
 
   /**
+   * @async
+   * @function updateArmor
    * @description Actualiza los datos de una armadura por su ID.
-   * @param {Request} req - Objeto de la petición HTTP que contiene el parámetro `id` y los campos a actualizar en el body.
-   * @param {Response} res - Objeto de la respuesta HTTP.
+   * @param {Request} req Objeto de la petición HTTP que contiene el parámetro `id` y los campos a actualizar en `body`.
+   * @param {Response} res Objeto de la respuesta HTTP.
    * @returns {Promise<void>} Devuelve la armadura actualizada o un error si no existe.
+   * @example
+   * // Body de ejemplo para la creación
+   * {
+   *   "name": "Armadura del Dragón",
+   *   "armorType": "liviana",
+   *   "heroType": "guerrero",
+   *   "description": "Proporciona alta defensa y resistencia al fuego",
+   *   "status": true,
+   *   "stock": 5,
+   *   "effects": [
+   *     { "effectType": "defensa", "value": 20, "durationTurns": 0 }
+   *   ],
+   *   "dropRate": 0.15
+   * }
    */
   readonly updateArmor = async (req: Request, res: Response): Promise<void> => {
     try {
