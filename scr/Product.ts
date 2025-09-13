@@ -14,6 +14,9 @@ import EpicView from "./view/EpicView";
 import ArmorModel from "./model/ArmorModel";
 import ArmorController from "./controller/ArmorController";
 import ArmorView from "./view/ArmorView";
+import UserView from "./view/UserView";
+import UsuarioController from "./controller/UserController";
+import UsuarioModel from "./model/UserModel";
 
 /**
  * @description Punto de entrada principal de la aplicación.
@@ -113,12 +116,18 @@ const armorController = new ArmorController(armorModel);
  */
 const armorView = new ArmorView(armorController);
 
+const userModel = new UsuarioModel();
+
+const userController = new UsuarioController(userModel)
+
+const userView = new UserView(userController)
+
 /**
  * @description Servidor principal de la aplicación.
  * Recibe todas las vistas y expone sus rutas mediante Express.
  * @type {Server}
  */
-const server = new Server(productView, itemView, weaponView, epicView, armorView);
+const server = new Server(productView, itemView, weaponView, epicView, armorView, userView);
 
 /**
  * @description Inicia la aplicación y levanta el servidor.

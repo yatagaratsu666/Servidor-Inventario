@@ -35,5 +35,7 @@ declare namespace NodeJS {
 
     /** @description Nombre de la colección de épicas en MongoDB. */
     MONGO_COLLECTION_EPICAS?: string;
+
+    MONGO_COLLECTION_USERS?: string;
   }
 }

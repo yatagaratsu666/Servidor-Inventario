@@ -1,17 +1,20 @@
-import express, { Application } from "express";
-import ProductView from "../view/HeroView";
-import ItemView from "../view/ItemView";
-import WeaponView from "../view/WeaponView";
-import EpicView from "../view/EpicView";
-import ArmorView from "../view/ArmorView";
-import path from "path";
-import cors from "cors";
-import { environment } from "../enviroment/enviroment";
-import { swaggerDocs } from "../swagger/Swagger";
+import express, { Application } from 'express';
+import ProductView from '../view/HeroView';
+import ItemView from '../view/ItemView';
+import WeaponView from '../view/WeaponView';
+import EpicView from '../view/EpicView';
+import ArmorView from '../view/ArmorView';
+import path from 'path';
+import cors from 'cors';
+import { environment } from '../enviroment/enviroment';
+import { swaggerDocs } from '../swagger/Swagger';
+import UserView from '../view/UserView';
+import { Server as HttpServer } from 'http';
+import { Server as IOServer } from 'socket.io';
 
 /**
  * @class Server
- * @classdesc Clase que configura y gestiona el servidor Express. 
+ * @classdesc Clase que configura y gestiona el servidor Express.
  * Se encarga de aplicar middlewares, definir rutas, servir archivos estáticos y habilitar documentación Swagger.
  */
 export default class Server {
@@ -35,7 +38,8 @@ export default class Server {
     private readonly itemView: ItemView,
     private readonly weaponView: WeaponView,
     private readonly epicView: EpicView,
-    private readonly armorView: ArmorView
+    private readonly armorView: ArmorView,
+    private readonly userView: UserView,
   ) {
     this.app = express();
     this.configure();
@@ -63,13 +67,13 @@ export default class Server {
             callback(new Error(`CORS policy: ${origin} no permitido`));
           }
         },
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-      })
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+      }),
     );
 
-    this.app.use(express.json({ limit: "10mb" }));
-    this.app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+    this.app.use(express.json({ limit: '10mb' }));
+    this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
   };
 
   /**
@@ -79,11 +83,12 @@ export default class Server {
    * @returns {void}
    */
   readonly routes = (): void => {
-    this.app.use("/", this.productView.router);
-    this.app.use("/", this.itemView.router);
-    this.app.use("/", this.weaponView.router);
-    this.app.use("/", this.epicView.router);
-    this.app.use("/", this.armorView.router);
+    this.app.use('/', this.productView.router);
+    this.app.use('/', this.itemView.router);
+    this.app.use('/', this.weaponView.router);
+    this.app.use('/', this.epicView.router);
+    this.app.use('/', this.armorView.router);
+    this.app.use('/', this.userView.router);
   };
 
   /**
@@ -94,7 +99,7 @@ export default class Server {
    */
   readonly static = (): void => {
     this.app.use(
-      express.static(path.join(__dirname, "../../", environment.staticPath))
+      express.static(path.join(__dirname, '../../', environment.staticPath)),
     );
   };
 
@@ -116,7 +121,17 @@ export default class Server {
    * @returns {void}
    */
   readonly start = (): void => {
-    this.app.listen(environment.port, "0.0.0.0", () => {
+    const httpServer = new HttpServer(this.app);
+    const io = new IOServer(httpServer, { cors: { origin: '*' } });
+
+    // Asignar Socket.IO al UserView
+    this.userView.setIO(io);
+
+    io.on('connection', (socket) => {
+      console.log('Cliente conectado:', socket.id);
+    });
+
+    httpServer.listen(environment.port, '0.0.0.0', () => {
       console.log(`Server running on port ${environment.port}`);
     });
   };
