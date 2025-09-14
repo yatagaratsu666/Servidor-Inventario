@@ -23,8 +23,8 @@ export default class UsuarioController {
     res: Response,
   ): Promise<void> => {
     try {
-      const { id } = req.params as { id: string };
-      const usuario = await this.usuarioModel.getUsuarioById(id);
+      const { nombreUsuario } = req.params as { nombreUsuario: string };
+      const usuario = await this.usuarioModel.getUsuarioById(nombreUsuario);
 
       if (!usuario) {
         res.status(404).json({ message: 'Usuario no encontrado' });
@@ -35,6 +35,28 @@ export default class UsuarioController {
     } catch (error) {
       console.error('Error en getUsuarioById:', error);
       res.status(500).json({ message: 'Error al obtener usuario', error });
+    }
+  };
+
+  getHeroByUsuarioId = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params as { id: string };
+
+      const hero = await this.usuarioModel.getUsuarioHeroById(id);
+
+      if (!hero) {
+        res.status(404).json({
+          message: `No se encontró un héroe equipado para el usuario con id: ${id}`,
+        });
+        return;
+      }
+
+      res.status(200).json(hero);
+    } catch (error) {
+      console.error('Error en getHeroByUsuarioId:', error);
+      res.status(500).json({
+        message: 'Error interno al obtener el héroe del usuario',
+      });
     }
   };
 
@@ -55,7 +77,7 @@ export default class UsuarioController {
 
       if (!created) {
         res.status(400).json({ message: 'Todos los usuarios ya existen' });
-        return
+        return;
       }
 
       // Emitir evento por Socket.IO
@@ -73,14 +95,14 @@ export default class UsuarioController {
     res: Response,
   ): Promise<void> => {
     try {
-      const { userId, categoria } = req.params as {
-        userId: string;
+      const { nombreUsuario, categoria } = req.params as {
+        nombreUsuario: string;
         categoria: keyof InventarioInterface;
       };
       const producto = req.body;
 
       const result = await this.usuarioModel.addProductoToInventario(
-        userId,
+        nombreUsuario,
         categoria,
         producto,
       );
@@ -91,7 +113,7 @@ export default class UsuarioController {
       }
 
       // Emitir evento por Socket.IO
-      this.io?.emit('productoAgregado', { userId, categoria, producto });
+      this.io?.emit('productoAgregado', { nombreUsuario, categoria, producto });
 
       res
         .status(200)
@@ -103,14 +125,14 @@ export default class UsuarioController {
   };
 
   readonly equipEpic = async (
-    req: Request<{ userId: string }>,
+    req: Request<{ nombreUsuario: string }>,
     res: Response,
   ): Promise<void> => {
     try {
-      const { userId } = req.params;
+      const { nombreUsuario } = req.params;
       const { epicName } = req.body;
 
-      const result = await this.usuarioModel.equipEpicAbility(userId, epicName);
+      const result = await this.usuarioModel.equipEpicAbility(nombreUsuario, epicName);
 
       if (!result) {
         res.status(400).json({ message: 'No se pudo equipar la armadura' });
@@ -118,7 +140,7 @@ export default class UsuarioController {
       }
 
       // Emitir evento por Socket.IO
-      this.io?.emit('epicEquipado', { userId, epicName });
+      this.io?.emit('epicEquipado', { nombreUsuario, epicName });
 
       res.status(200).json({ message: 'Armadura equipada con éxito' });
     } catch (error) {
@@ -128,14 +150,14 @@ export default class UsuarioController {
   };
 
   readonly equipWeapon = async (
-    req: Request<{ userId: string }>,
+    req: Request<{ nombreUsuario: string }>,
     res: Response,
   ): Promise<void> => {
     try {
-      const { userId } = req.params;
+      const { nombreUsuario } = req.params;
       const { weaponName } = req.body;
 
-      const result = await this.usuarioModel.equipWeapon(userId, weaponName);
+      const result = await this.usuarioModel.equipWeapon(nombreUsuario, weaponName);
 
       if (!result) {
         res.status(400).json({ message: 'No se pudo equipar la armadura' });
@@ -143,7 +165,7 @@ export default class UsuarioController {
       }
 
       // Emitir evento por Socket.IO
-      this.io?.emit('weaponEquipado', { userId, weaponName });
+      this.io?.emit('weaponEquipado', { nombreUsuario, weaponName });
 
       res.status(200).json({ message: 'Armadura equipada con éxito' });
     } catch (error) {
@@ -153,14 +175,14 @@ export default class UsuarioController {
   };
 
   readonly equipItem = async (
-    req: Request<{ userId: string }>,
+    req: Request<{ nombreUsuario: string }>,
     res: Response,
   ): Promise<void> => {
     try {
-      const { userId } = req.params;
+      const { nombreUsuario } = req.params;
       const { itemName } = req.body;
 
-      const result = await this.usuarioModel.equipItem(userId, itemName);
+      const result = await this.usuarioModel.equipItem(nombreUsuario, itemName);
 
       if (!result) {
         res.status(400).json({ message: 'No se pudo equipar la armadura' });
@@ -168,7 +190,7 @@ export default class UsuarioController {
       }
 
       // Emitir evento por Socket.IO
-      this.io?.emit('itemEquipado', { userId, itemName });
+      this.io?.emit('itemEquipado', { nombreUsuario, itemName });
 
       res.status(200).json({ message: 'Armadura equipada con éxito' });
     } catch (error) {
@@ -178,21 +200,21 @@ export default class UsuarioController {
   };
 
   readonly equipArmor = async (
-    req: Request<{ userId: string }>,
+    req: Request<{ nombreUsuario: string }>,
     res: Response,
   ): Promise<void> => {
     try {
-      const { userId } = req.params;
+      const { nombreUsuario } = req.params;
       const { armorName } = req.body;
 
-      const result = await this.usuarioModel.equipArmor(userId, armorName);
+      const result = await this.usuarioModel.equipArmor(nombreUsuario, armorName);
 
       if (!result) {
         res.status(400).json({ message: 'No se pudo equipar la armadura' });
         return;
       }
 
-      this.io?.emit('armorEquipado', { userId, armorName });
+      this.io?.emit('armorEquipado', { nombreUsuario, armorName });
 
       res.status(200).json({ message: 'Armadura equipada con éxito' });
     } catch (error) {
@@ -201,22 +223,22 @@ export default class UsuarioController {
     }
   };
 
-    readonly equipHero = async (
-    req: Request<{ userId: string }>,
+  readonly equipHero = async (
+    req: Request<{ nombreUsuario: string }>,
     res: Response,
   ): Promise<void> => {
     try {
-      const { userId } = req.params;
+      const { nombreUsuario } = req.params;
       const { heroName } = req.body;
 
-      const result = await this.usuarioModel.equipHero(userId, heroName);
+      const result = await this.usuarioModel.equipHero(nombreUsuario, heroName);
 
       if (!result) {
         res.status(400).json({ message: 'No se pudo equipar heroe' });
         return;
       }
 
-      this.io?.emit('heroEquipado', { userId, heroName });
+      this.io?.emit('heroEquipado', { nombreUsuario, heroName });
 
       res.status(200).json({ message: 'heroe equipado con éxito' });
     } catch (error) {
@@ -226,18 +248,21 @@ export default class UsuarioController {
   };
 
   // ---------- UNEQUIP ----------
-  readonly unequipArmor = async (req: Request<{ userId: string }>, res: Response): Promise<void> => {
+  readonly unequipArmor = async (
+    req: Request<{ nombreUsuario: string }>,
+    res: Response,
+  ): Promise<void> => {
     try {
-      const { userId } = req.params;
+      const { nombreUsuario } = req.params;
       const { armorName } = req.body;
 
-      const result = await this.usuarioModel.unequipArmor(userId, armorName);
+      const result = await this.usuarioModel.unequipArmor(nombreUsuario, armorName);
       if (!result) {
         res.status(400).json({ message: 'No se pudo desequipar la armadura' });
         return;
       }
 
-      this.io?.emit('armorDesequipado', { userId, armorName });
+      this.io?.emit('armorDesequipado', { nombreUsuario, armorName });
       res.status(200).json({ message: 'Armadura desequipada con éxito' });
     } catch (error) {
       console.error('Error en unequipArmor:', error);
@@ -245,18 +270,21 @@ export default class UsuarioController {
     }
   };
 
-  readonly unequipWeapon = async (req: Request<{ userId: string }>, res: Response): Promise<void> => {
+  readonly unequipWeapon = async (
+    req: Request<{ nombreUsuario: string }>,
+    res: Response,
+  ): Promise<void> => {
     try {
-      const { userId } = req.params;
+      const { nombreUsuario } = req.params;
       const { weaponName } = req.body;
 
-      const result = await this.usuarioModel.unequipWeapon(userId, weaponName);
+      const result = await this.usuarioModel.unequipWeapon(nombreUsuario, weaponName);
       if (!result) {
         res.status(400).json({ message: 'No se pudo desequipar el arma' });
         return;
       }
 
-      this.io?.emit('weaponDesequipado', { userId, weaponName });
+      this.io?.emit('weaponDesequipado', { nombreUsuario, weaponName });
       res.status(200).json({ message: 'Arma desequipada con éxito' });
     } catch (error) {
       console.error('Error en unequipWeapon:', error);
@@ -264,18 +292,21 @@ export default class UsuarioController {
     }
   };
 
-  readonly unequipItem = async (req: Request<{ userId: string }>, res: Response): Promise<void> => {
+  readonly unequipItem = async (
+    req: Request<{ nombreUsuario: string }>,
+    res: Response,
+  ): Promise<void> => {
     try {
-      const { userId } = req.params;
+      const { nombreUsuario } = req.params;
       const { itemName } = req.body;
 
-      const result = await this.usuarioModel.unequipItem(userId, itemName);
+      const result = await this.usuarioModel.unequipItem(nombreUsuario, itemName);
       if (!result) {
         res.status(400).json({ message: 'No se pudo desequipar el item' });
         return;
       }
 
-      this.io?.emit('itemDesequipado', { userId, itemName });
+      this.io?.emit('itemDesequipado', { nombreUsuario, itemName });
       res.status(200).json({ message: 'Item desequipado con éxito' });
     } catch (error) {
       console.error('Error en unequipItem:', error);
@@ -283,37 +314,52 @@ export default class UsuarioController {
     }
   };
 
-  readonly unequipEpic = async (req: Request<{ userId: string }>, res: Response): Promise<void> => {
+  readonly unequipEpic = async (
+    req: Request<{ nombreUsuario: string }>,
+    res: Response,
+  ): Promise<void> => {
     try {
-      const { userId } = req.params;
+      const { nombreUsuario } = req.params;
       const { epicName } = req.body;
 
-      const result = await this.usuarioModel.unequipEpicAbility(userId, epicName);
+      const result = await this.usuarioModel.unequipEpicAbility(
+        nombreUsuario,
+        epicName,
+      );
       if (!result) {
-        res.status(400).json({ message: 'No se pudo desequipar la habilidad épica' });
+        res
+          .status(400)
+          .json({ message: 'No se pudo desequipar la habilidad épica' });
         return;
       }
 
-      this.io?.emit('epicDesequipado', { userId, epicName });
-      res.status(200).json({ message: 'Habilidad épica desequipada con éxito' });
+      this.io?.emit('epicDesequipado', { nombreUsuario, epicName });
+      res
+        .status(200)
+        .json({ message: 'Habilidad épica desequipada con éxito' });
     } catch (error) {
       console.error('Error en unequipEpic:', error);
-      res.status(500).json({ message: 'Error al desequipar habilidad épica', error });
+      res
+        .status(500)
+        .json({ message: 'Error al desequipar habilidad épica', error });
     }
   };
 
-    readonly unequipHero = async (req: Request<{ userId: string }>, res: Response): Promise<void> => {
+  readonly unequipHero = async (
+    req: Request<{ nombreUsuario: string }>,
+    res: Response,
+  ): Promise<void> => {
     try {
-      const { userId } = req.params;
+      const { nombreUsuario } = req.params;
       const { heroName } = req.body;
 
-      const result = await this.usuarioModel.unequipHero(userId, heroName);
+      const result = await this.usuarioModel.unequipHero(nombreUsuario, heroName);
       if (!result) {
         res.status(400).json({ message: 'No se pudo desequipar el heroe' });
         return;
       }
 
-      this.io?.emit('heroDesequipado', { userId, heroName });
+      this.io?.emit('heroDesequipado', { nombreUsuario, heroName });
       res.status(200).json({ message: 'Heroe desequipado con éxito' });
     } catch (error) {
       console.error('Error en unequipEpic:', error);

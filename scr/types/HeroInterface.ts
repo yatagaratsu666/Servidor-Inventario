@@ -78,6 +78,25 @@ export default interface HeroInterface {
 
     /** @description Indica si la acción está disponible para su uso. */
     isAvailable: boolean;
+
+    effect: {
+      /** Tipo de efecto (ejemplo: veneno, curación, escudo, etc.). */
+      effectType: string;
+
+      /** Valor del efecto, puede ser numérico o textual. */
+      value: number | string;
+
+      /**Duración del efecto en turnos. */
+      durationTurns: number;
+    };
+  }[];
+  randomEffects: {
+    randomEffectType: string;
+    percentage: number;
+    valueApply: {
+      min: number;
+      max: number;
+    };
   }[];
 
   /**

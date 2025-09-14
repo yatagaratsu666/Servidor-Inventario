@@ -2,6 +2,7 @@
 import { MongoClient } from 'mongodb';
 import { UserInterface } from '../types/UserInterface';
 import InventarioInterface from '../types/InventarioInterface';
+import HeroInterface from '../types/HeroInterface';
 
 /**
  * @class UsuarioModel
@@ -30,24 +31,24 @@ export default class UsuarioModel {
       if (Array.isArray(usuarios)) {
         // Filtramos los usuarios que ya existen
         const existingUsers = await collection
-          .find({ id: { $in: usuarios.map((u) => u.id) } })
+          .find({ id: { $in: usuarios.map((u) => u.nombreUsuario) } })
           .project<{ id: string }>({ id: 1 })
           .toArray();
 
         const existingIdsSet = new Set(existingUsers.map((u) => u['id']));
 
-        const newUsers = usuarios.filter((u) => !existingIdsSet.has(u.id));
+        const newUsers = usuarios.filter((u) => !existingIdsSet.has(u.nombreUsuario));
         if (newUsers.length === 0) return false;
 
         await collection.insertMany(newUsers);
         console.log(
-          `Usuarios creados: ${newUsers.map((u) => u.id).join(', ')}`,
+          `Usuarios creados: ${newUsers.map((u) => u.nombreUsuario).join(', ')}`,
         );
       } else {
-        const existingUser = await collection.findOne({ id: usuarios.id });
+        const existingUser = await collection.findOne({ id: usuarios.nombreUsuario });
         if (existingUser) return false;
         await collection.insertOne(usuarios);
-        console.log(`Usuario creado: ${usuarios.id}`);
+        console.log(`Usuario creado: ${usuarios.nombreUsuario}`);
       }
 
       return true;
@@ -61,14 +62,14 @@ export default class UsuarioModel {
 
   /** Obtener usuario por ID */
   readonly getUsuarioById = async (
-    id: string,
+    nombreUsuario: string,
   ): Promise<UserInterface | null> => {
     try {
       await this.client.connect();
       const db = this.client.db(this.dbName);
       const collection = db.collection<UserInterface>(this.collectionName);
 
-      return await collection.findOne({ id });
+      return await collection.findOne({nombreUsuario});
     } catch (error) {
       console.error('Error al obtener usuario por ID:', error);
       return null;
@@ -76,6 +77,31 @@ export default class UsuarioModel {
       await this.client.close();
     }
   };
+
+readonly getUsuarioHeroById = async (
+  id: string,
+): Promise<HeroInterface | undefined> => {
+  try {
+    await this.client.connect();
+    const db = this.client.db(this.dbName);
+    const collection = db.collection<UserInterface>(this.collectionName);
+
+    // Busca el usuario por su campo id (en tu caso es un string tipo "u005")
+    const user = await collection.findOne({ id });
+
+    if (!user || !user.equipados || !Array.isArray(user.equipados.hero)) {
+      return undefined;
+    }
+
+    // Retorna solo el primer héroe equipado si existe
+    return user.equipados.hero.length > 0 ? user.equipados.hero[0] : undefined;
+  } catch (error) {
+    console.error('Error al obtener héroe por ID de usuario:', error);
+    return undefined;
+  } finally {
+    await this.client.close();
+  }
+};
 
   /** Obtener todos los usuarios */
   readonly getAllUsuarios = async (): Promise<UserInterface[]> => {
@@ -120,7 +146,7 @@ export default class UsuarioModel {
   };
 
   readonly equipArmor = async (
-    userId: string,
+    nombreUsuario: string,
     armorName: string,
   ): Promise<boolean> => {
     try {
@@ -128,7 +154,7 @@ export default class UsuarioModel {
       const db = this.client.db(this.dbName);
       const collection = db.collection<UserInterface>(this.collectionName);
 
-      const usuario = await collection.findOne({ id: userId });
+      const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
       if (!usuario) return false;
 
       const armor = usuario.inventario.armors.find(
@@ -139,13 +165,13 @@ export default class UsuarioModel {
       const ops: any[] = [
         {
           updateOne: {
-            filter: { id: userId },
+            filter: { nombreUsuario: nombreUsuario },
             update: { $pull: { 'inventario.armors': { id: armor.id } } },
           },
         },
         {
           updateOne: {
-            filter: { id: userId },
+            filter: { nombreUsuario: nombreUsuario },
             update: { $push: { 'equipados.armors': armor } },
           },
         },
@@ -163,7 +189,7 @@ export default class UsuarioModel {
 
   /** Equipar un item */
   readonly equipItem = async (
-    userId: string,
+    nombreUsuario: string,
     itemName: string,
   ): Promise<boolean> => {
     try {
@@ -172,7 +198,7 @@ export default class UsuarioModel {
       const collection = db.collection<UserInterface>(this.collectionName);
 
       // Buscar usuario
-      const usuario = await collection.findOne({ id: userId });
+      const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
       if (!usuario) return false;
 
       // Buscar item en el inventario por nombre
@@ -185,13 +211,13 @@ export default class UsuarioModel {
       const ops: any[] = [
         {
           updateOne: {
-            filter: { id: userId },
+            filter: { nombreUsuario: nombreUsuario },
             update: { $pull: { 'inventario.items': { id: item.id } } },
           },
         },
         {
           updateOne: {
-            filter: { id: userId },
+            filter: { nombreUsuario: nombreUsuario },
             update: { $push: { 'equipados.items': item } },
           },
         },
@@ -209,7 +235,7 @@ export default class UsuarioModel {
 
   /** Equipar un arma */
   readonly equipWeapon = async (
-    userId: string,
+    nombreUsuario: string,
     weaponName: string,
   ): Promise<boolean> => {
     try {
@@ -218,7 +244,7 @@ export default class UsuarioModel {
       const collection = db.collection<UserInterface>(this.collectionName);
 
       // Buscar usuario
-      const usuario = await collection.findOne({ id: userId });
+      const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
       if (!usuario) return false;
 
       // Buscar arma en el inventario por nombre
@@ -231,13 +257,13 @@ export default class UsuarioModel {
       const ops: any[] = [
         {
           updateOne: {
-            filter: { id: userId },
+            filter: { nombreUsuario: nombreUsuario },
             update: { $pull: { 'inventario.weapons': { id: weapon.id } } },
           },
         },
         {
           updateOne: {
-            filter: { id: userId },
+            filter: { nombreUsuario: nombreUsuario },
             update: { $push: { 'equipados.weapons': weapon } },
           },
         },
@@ -255,7 +281,7 @@ export default class UsuarioModel {
 
   /** Equipar una habilidad épica */
   readonly equipEpicAbility = async (
-    userId: string,
+    nombreUsuario: string,
     epicName: string,
   ): Promise<boolean> => {
     try {
@@ -264,7 +290,7 @@ export default class UsuarioModel {
       const collection = db.collection<UserInterface>(this.collectionName);
 
       // Buscar usuario
-      const usuario = await collection.findOne({ id: userId });
+      const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
       if (!usuario) return false;
 
       // Buscar la habilidad épica por nombre
@@ -277,13 +303,13 @@ export default class UsuarioModel {
       const ops: any[] = [
         {
           updateOne: {
-            filter: { id: userId },
+            filter: { nombreUsuario: nombreUsuario },
             update: { $pull: { 'inventario.epicAbility': { id: epic.id } } },
           },
         },
         {
           updateOne: {
-            filter: { id: userId },
+            filter: { nombreUsuario: nombreUsuario },
             update: { $push: { 'equipados.epicAbility': epic } },
           },
         },
@@ -300,7 +326,7 @@ export default class UsuarioModel {
   };
 
     readonly equipHero = async (
-    userId: string,
+    nombreUsuario: string,
     heroName: string,
   ): Promise<boolean> => {
     try {
@@ -308,7 +334,7 @@ export default class UsuarioModel {
       const db = this.client.db(this.dbName);
       const collection = db.collection<UserInterface>(this.collectionName);
 
-      const usuario = await collection.findOne({ id: userId });
+      const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
       if (!usuario) return false;
 
       const hero = usuario.inventario.hero.find(
@@ -319,13 +345,13 @@ export default class UsuarioModel {
       const ops: any[] = [
         {
           updateOne: {
-            filter: { id: userId },
+            filter: { nombreUsuario: nombreUsuario },
             update: { $pull: { 'inventario.hero': { id: hero.id } } },
           },
         },
         {
           updateOne: {
-            filter: { id: userId },
+            filter: { nombreUsuario: nombreUsuario },
             update: { $push: { 'equipados.hero': hero } },
           },
         },
@@ -343,7 +369,7 @@ export default class UsuarioModel {
 
   /** Desequipar un arma */
 readonly unequipWeapon = async (
-  userId: string,
+  nombreUsuario: string,
   weaponName: string,
 ): Promise<boolean> => {
   try {
@@ -351,7 +377,7 @@ readonly unequipWeapon = async (
     const db = this.client.db(this.dbName);
     const collection = db.collection<UserInterface>(this.collectionName);
 
-    const usuario = await collection.findOne({ id: userId });
+    const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
     if (!usuario) return false;
 
     // Buscar arma en los equipados
@@ -363,13 +389,13 @@ readonly unequipWeapon = async (
     const ops: any[] = [
       {
         updateOne: {
-          filter: { id: userId },
+          filter: { nombreUsuario: nombreUsuario },
           update: { $pull: { 'equipados.weapons': { id: weapon.id } } },
         },
       },
       {
         updateOne: {
-          filter: { id: userId },
+          filter: { nombreUsuario: nombreUsuario },
           update: { $push: { 'inventario.weapons': weapon } },
         },
       },
@@ -387,7 +413,7 @@ readonly unequipWeapon = async (
 
 /** Desequipar armadura */
 readonly unequipArmor = async (
-  userId: string,
+  nombreUsuario: string,
   armorName: string,
 ): Promise<boolean> => {
   try {
@@ -395,7 +421,7 @@ readonly unequipArmor = async (
     const db = this.client.db(this.dbName);
     const collection = db.collection<UserInterface>(this.collectionName);
 
-    const usuario = await collection.findOne({ id: userId });
+    const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
     if (!usuario) return false;
 
     const armor = usuario.equipados.armors.find(
@@ -406,13 +432,13 @@ readonly unequipArmor = async (
     const ops: any[] = [
       {
         updateOne: {
-          filter: { id: userId },
+          filter: { nombreUsuario: nombreUsuario },
           update: { $pull: { 'equipados.armors': { id: armor.id } } },
         },
       },
       {
         updateOne: {
-          filter: { id: userId },
+          filter: { nombreUsuario: nombreUsuario },
           update: { $push: { 'inventario.armors': armor } },
         },
       },
@@ -430,7 +456,7 @@ readonly unequipArmor = async (
 
 /** Desequipar item */
 readonly unequipItem = async (
-  userId: string,
+  nombreUsuario: string,
   itemName: string,
 ): Promise<boolean> => {
   try {
@@ -438,7 +464,7 @@ readonly unequipItem = async (
     const db = this.client.db(this.dbName);
     const collection = db.collection<UserInterface>(this.collectionName);
 
-    const usuario = await collection.findOne({ id: userId });
+    const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
     if (!usuario) return false;
 
     const item = usuario.equipados.items.find(
@@ -449,13 +475,13 @@ readonly unequipItem = async (
     const ops: any[] = [
       {
         updateOne: {
-          filter: { id: userId },
+          filter: { nombreUsuario: nombreUsuario },
           update: { $pull: { 'equipados.items': { id: item.id } } },
         },
       },
       {
         updateOne: {
-          filter: { id: userId },
+          filter: { nombreUsuario: nombreUsuario },
           update: { $push: { 'inventario.items': item } },
         },
       },
@@ -473,7 +499,7 @@ readonly unequipItem = async (
 
 /** Desequipar habilidad épica */
 readonly unequipEpicAbility = async (
-  userId: string,
+  nombreUsuario: string,
   epicName: string,
 ): Promise<boolean> => {
   try {
@@ -481,7 +507,7 @@ readonly unequipEpicAbility = async (
     const db = this.client.db(this.dbName);
     const collection = db.collection<UserInterface>(this.collectionName);
 
-    const usuario = await collection.findOne({ id: userId });
+    const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
     if (!usuario) return false;
 
     const epic = usuario.equipados.epicAbility.find(
@@ -492,13 +518,13 @@ readonly unequipEpicAbility = async (
     const ops: any[] = [
       {
         updateOne: {
-          filter: { id: userId },
+          filter: { nombreUsuario: nombreUsuario },
           update: { $pull: { 'equipados.epicAbility': { id: epic.id } } },
         },
       },
       {
         updateOne: {
-          filter: { id: userId },
+          filter: { nombreUsuario: nombreUsuario },
           update: { $push: { 'inventario.epicAbility': epic } },
         },
       },
@@ -516,7 +542,7 @@ readonly unequipEpicAbility = async (
 
   /** Desequipar un arma */
 readonly unequipHero = async (
-  userId: string,
+  nombreUsuario: string,
   heroName: string,
 ): Promise<boolean> => {
   try {
@@ -524,7 +550,7 @@ readonly unequipHero = async (
     const db = this.client.db(this.dbName);
     const collection = db.collection<UserInterface>(this.collectionName);
 
-    const usuario = await collection.findOne({ id: userId });
+    const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
     if (!usuario) return false;
 
     // Buscar arma en los equipados
@@ -536,13 +562,13 @@ readonly unequipHero = async (
     const ops: any[] = [
       {
         updateOne: {
-          filter: { id: userId },
+          filter: { nombreUsuario: nombreUsuario },
           update: { $pull: { 'equipados.hero': { id: hero.id } } },
         },
       },
       {
         updateOne: {
-          filter: { id: userId },
+          filter: { nombreUsuario: nombreUsuario },
           update: { $push: { 'inventario.hero': hero } },
         },
       },

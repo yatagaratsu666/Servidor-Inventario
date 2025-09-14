@@ -16,18 +16,20 @@ export default class UserView {
   }
 
   readonly routes = (): void => {
-    this.router.get('/usuarios/:id', this.usuarioController.getUsuarioById);
+    this.router.get('/usuarios/:nombreUsuario', this.usuarioController.getUsuarioById);
     this.router.post('/usuarios/create', this.usuarioController.createUsuarios);
-    this.router.post('/usuarios/:id/inventario/add', this.usuarioController.addProductoToInventario);
-    this.router.put('/usuarios/:userId/equipArmor', this.usuarioController.equipArmor);
-    this.router.put('/usuarios/:userId/equipItem', this.usuarioController.equipItem);
-    this.router.put('/usuarios/:userId/equipWeapon', this.usuarioController.equipWeapon);
-    this.router.put('/usuarios/:userId/equipEpic', this.usuarioController.equipEpic);
-    this.router.put('/usuarios/:userId/equipHero', this.usuarioController.equipHero);
-    this.router.put('/usuarios/:userId/unequipArmor', this.usuarioController.unequipArmor);
-    this.router.put('/usuarios/:userId/unequipItem', this.usuarioController.unequipItem);
-    this.router.put('/usuarios/:userId/unequipWeapon', this.usuarioController.unequipWeapon);
-    this.router.put('/usuarios/:userId/unequipEpic', this.usuarioController.unequipEpic);
-    this.router.put('/usuarios/:userId/unequipHero', this.usuarioController.unequipHero);
+    this.router.post('/usuarios/:nombreUsuario/inventario/add', this.usuarioController.addProductoToInventario);
+    this.router.put('/usuarios/:nombreUsuario/equipArmor', this.usuarioController.equipArmor);
+    this.router.put('/usuarios/:nombreUsuario/equipItem', this.usuarioController.equipItem);
+    this.router.put('/usuarios/:nombreUsuario/equipWeapon', this.usuarioController.equipWeapon);
+    this.router.put('/usuarios/:nombreUsuario/equipEpic', this.usuarioController.equipEpic);
+    this.router.put('/usuarios/:nombreUsuario/equipHero', this.usuarioController.equipHero);
+    this.router.put('/usuarios/:nombreUsuario/unequipArmor', this.usuarioController.unequipArmor);
+    this.router.put('/usuarios/:nombreUsuario/unequipItem', this.usuarioController.unequipItem);
+    this.router.put('/usuarios/:nombreUsuario/unequipWeapon', this.usuarioController.unequipWeapon);
+    this.router.put('/usuarios/:nombreUsuario/unequipEpic', this.usuarioController.unequipEpic);
+    this.router.put('/usuarios/:nombreUsuario/unequipHero', this.usuarioController.unequipHero);
+    this.router.put('/usuarios/hero/:nombreUsuario/unequipHero', this.usuarioController.unequipHero);
+    this.router.get('/usuarios/:nombreUsuario/hero', this.usuarioController.getHeroByUsuarioId);
   };
 }
