@@ -283,7 +283,8 @@ export default class UsuarioController {
         res.status(400).json({ message: 'No se pudo desequipar el arma' });
         return;
       }
-
+     
+      //hola
       this.io?.emit('weaponDesequipado', { nombreUsuario, weaponName });
       res.status(200).json({ message: 'Arma desequipada con éxito' });
     } catch (error) {
