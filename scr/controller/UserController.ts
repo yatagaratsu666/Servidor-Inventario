@@ -409,5 +409,4 @@ export default class UsuarioController {
       res.status(500).json({ message: 'Error al aplicar recompensas', error });
     }
   };
-
 }

@@ -608,7 +608,6 @@ export default class UsuarioModel {
     }
   };
 
-
 readonly aplicarRecompensas = async (
   recompensa: {
     Rewards: { playerRewarded: string; credits: number; exp: number };
