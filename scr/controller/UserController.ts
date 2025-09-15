@@ -9,7 +9,7 @@ import InventarioInterface from '../types/InventarioInterface';
  * @classdesc Controlador encargado de manejar las operaciones relacionadas con los usuarios.
  */
 export default class UsuarioController {
-  constructor(private readonly usuarioModel: UsuarioModel) {}
+  constructor(private readonly usuarioModel: UsuarioModel) { }
 
   /** Obtener un usuario por ID */
   readonly getUsuarioById = async (
@@ -258,7 +258,7 @@ export default class UsuarioController {
         res.status(400).json({ message: 'No se pudo desequipar el arma' });
         return;
       }
-     
+
       res.status(200).json({ message: 'Arma desequipada con éxito' });
     } catch (error) {
       console.error('Error en unequipWeapon:', error);
@@ -338,7 +338,35 @@ export default class UsuarioController {
     }
   };
 
-<<<<<<< HEAD
+  /** Actualizar créditos de un usuario */
+  readonly updateCreditos = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    try {
+      const { nombreUsuario } = req.params as { nombreUsuario: string };
+      const { creditos } = req.body as { creditos: number };
+      if (typeof creditos !== 'number' || creditos < 0) {
+        res.status(400).json({ message: 'El campo "creditos" debe ser un número válido' });
+        return;
+      }
+      const updated = await this.usuarioModel.updateCreditos(nombreUsuario, creditos);
+      if (!updated) {
+        res.status(404).json({ message: `No se pudo actualizar los créditos para el usuario ${nombreUsuario}` });
+        return;
+      }
+      // Emitir evento por Socket.IO
+
+      res.status(200).json({
+        message: `Créditos actualizados con éxito para el usuario ${nombreUsuario}`,
+        creditos,
+      });
+    } catch (error) {
+      console.error('Error en updateCreditos:', error);
+      res.status(500).json({ message: 'Error al actualizar créditos', error });
+    }
+  };
+
   readonly applyRewards = async (
     req: Request,
     res: Response
@@ -381,37 +409,5 @@ export default class UsuarioController {
       res.status(500).json({ message: 'Error al aplicar recompensas', error });
     }
   };
-=======
-  /** Actualizar créditos de un usuario */
-  readonly updateCreditos = async (
-    req: Request,
-    res: Response,
-  ): Promise<void> => {
-    try {
-      const { nombreUsuario } = req.params as { nombreUsuario: string };
-      const { creditos } = req.body as { creditos: number };
-      if (typeof creditos !== 'number' || creditos < 0) {
-        res.status(400).json({ message: 'El campo "creditos" debe ser un número válido' });
-        return;
-      }
-      const updated = await this.usuarioModel.updateCreditos(nombreUsuario, creditos);
-      if (!updated) {
-        res.status(404).json({ message: `No se pudo actualizar los créditos para el usuario ${nombreUsuario}` });
-        return;
-      }
-      // Emitir evento por Socket.IO
 
-      res.status(200).json({
-        message: `Créditos actualizados con éxito para el usuario ${nombreUsuario}`,
-        creditos,
-      });
-    } catch (error) {
-      console.error('Error en updateCreditos:', error);
-      res.status(500).json({ message: 'Error al actualizar créditos', error });
-    }
-  };
-
-
-
->>>>>>> bbb0f430e630d6e6c7ac71445230a6deb13faa92
 }
