@@ -608,18 +608,6 @@ export default class UsuarioModel {
     }
   };
 
-
-<<<<<<< HEAD
-    const result = await collection.bulkWrite(ops);
-    return result.modifiedCount > 0;
-  } catch (error) {
-    console.error('Error al desequipar heroe:', error);
-    return false;
-  } finally {
-    await this.client.close();
-  }
-};
-
 readonly aplicarRecompensas = async (
   recompensa: {
     Rewards: { playerRewarded: string; credits: number; exp: number };
@@ -715,6 +703,4 @@ readonly aplicarRecompensas = async (
     await this.client.close();
   }
 };
-=======
->>>>>>> bbb0f430e630d6e6c7ac71445230a6deb13faa92
 }

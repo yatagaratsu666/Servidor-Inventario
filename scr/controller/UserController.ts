@@ -338,7 +338,6 @@ export default class UsuarioController {
     }
   };
 
-<<<<<<< HEAD
   readonly applyRewards = async (
     req: Request,
     res: Response
@@ -381,7 +380,6 @@ export default class UsuarioController {
       res.status(500).json({ message: 'Error al aplicar recompensas', error });
     }
   };
-=======
   /** Actualizar créditos de un usuario */
   readonly updateCreditos = async (
     req: Request,
@@ -410,8 +408,4 @@ export default class UsuarioController {
       res.status(500).json({ message: 'Error al actualizar créditos', error });
     }
   };
-
-
-
->>>>>>> bbb0f430e630d6e6c7ac71445230a6deb13faa92
 }
