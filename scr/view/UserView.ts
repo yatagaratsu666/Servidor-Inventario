@@ -25,6 +25,6 @@ export default class UserView {
     this.router.put('/usuarios/:nombreUsuario/unequipHero', this.usuarioController.unequipHero);
     this.router.put('/usuarios/hero/:nombreUsuario/unequipHero', this.usuarioController.unequipHero);
     this.router.get('/usuarios/:nombreUsuario/hero', this.usuarioController.getHeroByUsuarioId);
-    
+    this.router.put('/usuarios/:nombreUsuario/creditos', this.usuarioController.updateCreditos);
   };
 }

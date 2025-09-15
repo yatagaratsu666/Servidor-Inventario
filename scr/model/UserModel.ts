@@ -78,30 +78,30 @@ export default class UsuarioModel {
     }
   };
 
-readonly getUsuarioHeroById = async (
-  id: string,
-): Promise<HeroInterface | undefined> => {
-  try {
-    await this.client.connect();
-    const db = this.client.db(this.dbName);
-    const collection = db.collection<UserInterface>(this.collectionName);
+  readonly getUsuarioHeroById = async (
+    id: string,
+  ): Promise<HeroInterface | undefined> => {
+    try {
+      await this.client.connect();
+      const db = this.client.db(this.dbName);
+      const collection = db.collection<UserInterface>(this.collectionName);
 
-    // Busca el usuario por su campo id (en tu caso es un string tipo "u005")
-    const user = await collection.findOne({ id });
+      // Busca el usuario por su campo id (en tu caso es un string tipo "u005")
+      const user = await collection.findOne({ id });
 
-    if (!user || !user.equipados || !Array.isArray(user.equipados.hero)) {
+      if (!user || !user.equipados || !Array.isArray(user.equipados.hero)) {
+        return undefined;
+      }
+
+      // Retorna solo el primer héroe equipado si existe
+      return user.equipados.hero.length > 0 ? user.equipados.hero[0] : undefined;
+    } catch (error) {
+      console.error('Error al obtener héroe por ID de usuario:', error);
       return undefined;
+    } finally {
+      await this.client.close();
     }
-
-    // Retorna solo el primer héroe equipado si existe
-    return user.equipados.hero.length > 0 ? user.equipados.hero[0] : undefined;
-  } catch (error) {
-    console.error('Error al obtener héroe por ID de usuario:', error);
-    return undefined;
-  } finally {
-    await this.client.close();
-  }
-};
+  };
 
   /** Obtener todos los usuarios */
   readonly getAllUsuarios = async (): Promise<UserInterface[]> => {
@@ -233,6 +233,7 @@ readonly getUsuarioHeroById = async (
     }
   };
 
+
   /** Equipar un arma */
   readonly equipWeapon = async (
     nombreUsuario: string,
@@ -325,7 +326,7 @@ readonly getUsuarioHeroById = async (
     }
   };
 
-    readonly equipHero = async (
+  readonly equipHero = async (
     nombreUsuario: string,
     heroName: string,
   ): Promise<boolean> => {
@@ -368,219 +369,243 @@ readonly getUsuarioHeroById = async (
   };
 
   /** Desequipar un arma */
-readonly unequipWeapon = async (
-  nombreUsuario: string,
-  weaponName: string,
-): Promise<boolean> => {
-  try {
-    await this.client.connect();
-    const db = this.client.db(this.dbName);
-    const collection = db.collection<UserInterface>(this.collectionName);
+  readonly unequipWeapon = async (
+    nombreUsuario: string,
+    weaponName: string,
+  ): Promise<boolean> => {
+    try {
+      await this.client.connect();
+      const db = this.client.db(this.dbName);
+      const collection = db.collection<UserInterface>(this.collectionName);
 
-    const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
-    if (!usuario) return false;
+      const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
+      if (!usuario) return false;
 
-    // Buscar arma en los equipados
-    const weapon = usuario.equipados.weapons.find(
-      (w) => w.name.toLowerCase() === weaponName.toLowerCase(),
-    );
-    if (!weapon) return false;
+      // Buscar arma en los equipados
+      const weapon = usuario.equipados.weapons.find(
+        (w) => w.name.toLowerCase() === weaponName.toLowerCase(),
+      );
+      if (!weapon) return false;
 
-    const ops: any[] = [
-      {
-        updateOne: {
-          filter: { nombreUsuario: nombreUsuario },
-          update: { $pull: { 'equipados.weapons': { id: weapon.id } } },
+      const ops: any[] = [
+        {
+          updateOne: {
+            filter: { nombreUsuario: nombreUsuario },
+            update: { $pull: { 'equipados.weapons': { id: weapon.id } } },
+          },
         },
-      },
-      {
-        updateOne: {
-          filter: { nombreUsuario: nombreUsuario },
-          update: { $push: { 'inventario.weapons': weapon } },
+        {
+          updateOne: {
+            filter: { nombreUsuario: nombreUsuario },
+            update: { $push: { 'inventario.weapons': weapon } },
+          },
         },
-      },
-    ];
+      ];
 
-    const result = await collection.bulkWrite(ops);
-    return result.modifiedCount > 0;
-  } catch (error) {
-    console.error('Error al desequipar arma:', error);
-    return false;
-  } finally {
-    await this.client.close();
-  }
-};
+      const result = await collection.bulkWrite(ops);
+      return result.modifiedCount > 0;
+    } catch (error) {
+      console.error('Error al desequipar arma:', error);
+      return false;
+    } finally {
+      await this.client.close();
+    }
+  };
 
-/** Desequipar armadura */
-readonly unequipArmor = async (
-  nombreUsuario: string,
-  armorName: string,
-): Promise<boolean> => {
-  try {
-    await this.client.connect();
-    const db = this.client.db(this.dbName);
-    const collection = db.collection<UserInterface>(this.collectionName);
+  /** Desequipar armadura */
+  readonly unequipArmor = async (
+    nombreUsuario: string,
+    armorName: string,
+  ): Promise<boolean> => {
+    try {
+      await this.client.connect();
+      const db = this.client.db(this.dbName);
+      const collection = db.collection<UserInterface>(this.collectionName);
 
-    const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
-    if (!usuario) return false;
+      const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
+      if (!usuario) return false;
 
-    const armor = usuario.equipados.armors.find(
-      (a) => a.name.toLowerCase() === armorName.toLowerCase(),
-    );
-    if (!armor) return false;
+      const armor = usuario.equipados.armors.find(
+        (a) => a.name.toLowerCase() === armorName.toLowerCase(),
+      );
+      if (!armor) return false;
 
-    const ops: any[] = [
-      {
-        updateOne: {
-          filter: { nombreUsuario: nombreUsuario },
-          update: { $pull: { 'equipados.armors': { id: armor.id } } },
+      const ops: any[] = [
+        {
+          updateOne: {
+            filter: { nombreUsuario: nombreUsuario },
+            update: { $pull: { 'equipados.armors': { id: armor.id } } },
+          },
         },
-      },
-      {
-        updateOne: {
-          filter: { nombreUsuario: nombreUsuario },
-          update: { $push: { 'inventario.armors': armor } },
+        {
+          updateOne: {
+            filter: { nombreUsuario: nombreUsuario },
+            update: { $push: { 'inventario.armors': armor } },
+          },
         },
-      },
-    ];
+      ];
 
-    const result = await collection.bulkWrite(ops);
-    return result.modifiedCount > 0;
-  } catch (error) {
-    console.error('Error al desequipar armadura:', error);
-    return false;
-  } finally {
-    await this.client.close();
-  }
-};
+      const result = await collection.bulkWrite(ops);
+      return result.modifiedCount > 0;
+    } catch (error) {
+      console.error('Error al desequipar armadura:', error);
+      return false;
+    } finally {
+      await this.client.close();
+    }
+  };
 
-/** Desequipar item */
-readonly unequipItem = async (
-  nombreUsuario: string,
-  itemName: string,
-): Promise<boolean> => {
-  try {
-    await this.client.connect();
-    const db = this.client.db(this.dbName);
-    const collection = db.collection<UserInterface>(this.collectionName);
+  /** Desequipar item */
+  readonly unequipItem = async (
+    nombreUsuario: string,
+    itemName: string,
+  ): Promise<boolean> => {
+    try {
+      await this.client.connect();
+      const db = this.client.db(this.dbName);
+      const collection = db.collection<UserInterface>(this.collectionName);
 
-    const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
-    if (!usuario) return false;
+      const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
+      if (!usuario) return false;
 
-    const item = usuario.equipados.items.find(
-      (i) => i.name.toLowerCase() === itemName.toLowerCase(),
-    );
-    if (!item) return false;
+      const item = usuario.equipados.items.find(
+        (i) => i.name.toLowerCase() === itemName.toLowerCase(),
+      );
+      if (!item) return false;
 
-    const ops: any[] = [
-      {
-        updateOne: {
-          filter: { nombreUsuario: nombreUsuario },
-          update: { $pull: { 'equipados.items': { id: item.id } } },
+      const ops: any[] = [
+        {
+          updateOne: {
+            filter: { nombreUsuario: nombreUsuario },
+            update: { $pull: { 'equipados.items': { id: item.id } } },
+          },
         },
-      },
-      {
-        updateOne: {
-          filter: { nombreUsuario: nombreUsuario },
-          update: { $push: { 'inventario.items': item } },
+        {
+          updateOne: {
+            filter: { nombreUsuario: nombreUsuario },
+            update: { $push: { 'inventario.items': item } },
+          },
         },
-      },
-    ];
+      ];
 
-    const result = await collection.bulkWrite(ops);
-    return result.modifiedCount > 0;
-  } catch (error) {
-    console.error('Error al desequipar item:', error);
-    return false;
-  } finally {
-    await this.client.close();
-  }
-};
+      const result = await collection.bulkWrite(ops);
+      return result.modifiedCount > 0;
+    } catch (error) {
+      console.error('Error al desequipar item:', error);
+      return false;
+    } finally {
+      await this.client.close();
+    }
+  };
 
-/** Desequipar habilidad épica */
-readonly unequipEpicAbility = async (
-  nombreUsuario: string,
-  epicName: string,
-): Promise<boolean> => {
-  try {
-    await this.client.connect();
-    const db = this.client.db(this.dbName);
-    const collection = db.collection<UserInterface>(this.collectionName);
+  /** Desequipar habilidad épica */
+  readonly unequipEpicAbility = async (
+    nombreUsuario: string,
+    epicName: string,
+  ): Promise<boolean> => {
+    try {
+      await this.client.connect();
+      const db = this.client.db(this.dbName);
+      const collection = db.collection<UserInterface>(this.collectionName);
 
-    const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
-    if (!usuario) return false;
+      const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
+      if (!usuario) return false;
 
-    const epic = usuario.equipados.epicAbility.find(
-      (e) => e.name.toLowerCase() === epicName.toLowerCase(),
-    );
-    if (!epic) return false;
+      const epic = usuario.equipados.epicAbility.find(
+        (e) => e.name.toLowerCase() === epicName.toLowerCase(),
+      );
+      if (!epic) return false;
 
-    const ops: any[] = [
-      {
-        updateOne: {
-          filter: { nombreUsuario: nombreUsuario },
-          update: { $pull: { 'equipados.epicAbility': { id: epic.id } } },
+      const ops: any[] = [
+        {
+          updateOne: {
+            filter: { nombreUsuario: nombreUsuario },
+            update: { $pull: { 'equipados.epicAbility': { id: epic.id } } },
+          },
         },
-      },
-      {
-        updateOne: {
-          filter: { nombreUsuario: nombreUsuario },
-          update: { $push: { 'inventario.epicAbility': epic } },
+        {
+          updateOne: {
+            filter: { nombreUsuario: nombreUsuario },
+            update: { $push: { 'inventario.epicAbility': epic } },
+          },
         },
-      },
-    ];
+      ];
 
-    const result = await collection.bulkWrite(ops);
-    return result.modifiedCount > 0;
-  } catch (error) {
-    console.error('Error al desequipar habilidad épica:', error);
-    return false;
-  } finally {
-    await this.client.close();
-  }
-};
+      const result = await collection.bulkWrite(ops);
+      return result.modifiedCount > 0;
+    } catch (error) {
+      console.error('Error al desequipar habilidad épica:', error);
+      return false;
+    } finally {
+      await this.client.close();
+    }
+  };
 
   /** Desequipar un arma */
-readonly unequipHero = async (
-  nombreUsuario: string,
-  heroName: string,
-): Promise<boolean> => {
-  try {
-    await this.client.connect();
-    const db = this.client.db(this.dbName);
-    const collection = db.collection<UserInterface>(this.collectionName);
+  readonly unequipHero = async (
+    nombreUsuario: string,
+    heroName: string,
+  ): Promise<boolean> => {
+    try {
+      await this.client.connect();
+      const db = this.client.db(this.dbName);
+      const collection = db.collection<UserInterface>(this.collectionName);
 
-    const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
-    if (!usuario) return false;
+      const usuario = await collection.findOne({ nombreUsuario: nombreUsuario });
+      if (!usuario) return false;
 
-    // Buscar arma en los equipados
-    const hero = usuario.equipados.hero.find(
-      (w) => w.name.toLowerCase() === heroName.toLowerCase(),
-    );
-    if (!hero) return false;
+      // Buscar arma en los equipados
+      const hero = usuario.equipados.hero.find(
+        (w) => w.name.toLowerCase() === heroName.toLowerCase(),
+      );
+      if (!hero) return false;
 
-    const ops: any[] = [
-      {
-        updateOne: {
-          filter: { nombreUsuario: nombreUsuario },
-          update: { $pull: { 'equipados.hero': { id: hero.id } } },
+      const ops: any[] = [
+        {
+          updateOne: {
+            filter: { nombreUsuario: nombreUsuario },
+            update: { $pull: { 'equipados.hero': { id: hero.id } } },
+          },
         },
-      },
-      {
-        updateOne: {
-          filter: { nombreUsuario: nombreUsuario },
-          update: { $push: { 'inventario.hero': hero } },
+        {
+          updateOne: {
+            filter: { nombreUsuario: nombreUsuario },
+            update: { $push: { 'inventario.hero': hero } },
+          },
         },
-      },
-    ];
+      ];
 
-    const result = await collection.bulkWrite(ops);
-    return result.modifiedCount > 0;
-  } catch (error) {
-    console.error('Error al desequipar heroe:', error);
-    return false;
-  } finally {
-    await this.client.close();
-  }
-};
+      const result = await collection.bulkWrite(ops);
+      return result.modifiedCount > 0;
+    } catch (error) {
+      console.error('Error al desequipar heroe:', error);
+      return false;
+    } finally {
+      await this.client.close();
+    }
+  };
+
+  readonly updateCreditos = async (
+    nombreUsuario: string,
+    nuevosCreditos: number,
+  ): Promise<boolean> => {
+    try {
+      await this.client.connect();
+      const db = this.client.db(this.dbName);
+      const collection = db.collection<UserInterface>(this.collectionName);
+
+      const result = await collection.updateOne(
+        { nombreUsuario },
+        { $set: { creditos: nuevosCreditos } },
+      );
+      return result.modifiedCount > 0;
+    } catch (error) {
+      console.error('Error al actualizar créditos:', error);
+      return false;
+    } finally {
+      await this.client.close();
+    }
+  };
+
+
 }
