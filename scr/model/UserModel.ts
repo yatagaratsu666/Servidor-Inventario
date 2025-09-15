@@ -69,7 +69,7 @@ export default class UsuarioModel {
       const db = this.client.db(this.dbName);
       const collection = db.collection<UserInterface>(this.collectionName);
 
-      return await collection.findOne({nombreUsuario});
+      return await collection.findOne({ nombreUsuario });
     } catch (error) {
       console.error('Error al obtener usuario por ID:', error);
       return null;

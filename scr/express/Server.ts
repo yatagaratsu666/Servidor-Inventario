@@ -10,7 +10,6 @@ import { environment } from '../enviroment/enviroment';
 import { swaggerDocs } from '../swagger/Swagger';
 import UserView from '../view/UserView';
 import { Server as HttpServer } from 'http';
-import { Server as IOServer } from 'socket.io';
 
 /**
  * @class Server
@@ -122,15 +121,6 @@ export default class Server {
    */
   readonly start = (): void => {
     const httpServer = new HttpServer(this.app);
-    const io = new IOServer(httpServer, { cors: { origin: '*' } });
-
-    // Asignar Socket.IO al UserView
-    this.userView.setIO(io);
-
-    io.on('connection', (socket) => {
-      console.log('Cliente conectado:', socket.id);
-    });
-
     httpServer.listen(environment.port, '0.0.0.0', () => {
       console.log(`Server running on port ${environment.port}`);
     });

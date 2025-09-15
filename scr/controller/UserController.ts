@@ -3,19 +3,13 @@ import { Request, Response } from 'express';
 import UsuarioModel from '../model/UserModel';
 import { UserInterface } from '../types/UserInterface';
 import InventarioInterface from '../types/InventarioInterface';
-import { Server as IOServer } from 'socket.io';
 
 /**
  * @class UsuarioController
  * @classdesc Controlador encargado de manejar las operaciones relacionadas con los usuarios.
  */
 export default class UsuarioController {
-  private io?: IOServer; // Instancia de Socket.IO
   constructor(private readonly usuarioModel: UsuarioModel) {}
-
-  setIO(io: IOServer) {
-    this.io = io;
-  }
 
   /** Obtener un usuario por ID */
   readonly getUsuarioById = async (
@@ -80,9 +74,6 @@ export default class UsuarioController {
         return;
       }
 
-      // Emitir evento por Socket.IO
-      this.io?.emit('usuariosCreado', usuarios);
-
       res.status(201).json({ message: 'Usuarios creados con éxito', usuarios });
     } catch (error) {
       console.error('Error en createUsuarios:', error);
@@ -112,9 +103,6 @@ export default class UsuarioController {
         return;
       }
 
-      // Emitir evento por Socket.IO
-      this.io?.emit('productoAgregado', { nombreUsuario, categoria, producto });
-
       res
         .status(200)
         .json({ message: 'Producto agregado al inventario con éxito' });
@@ -139,8 +127,6 @@ export default class UsuarioController {
         return;
       }
 
-      // Emitir evento por Socket.IO
-      this.io?.emit('epicEquipado', { nombreUsuario, epicName });
 
       res.status(200).json({ message: 'Armadura equipada con éxito' });
     } catch (error) {
@@ -164,9 +150,6 @@ export default class UsuarioController {
         return;
       }
 
-      // Emitir evento por Socket.IO
-      this.io?.emit('weaponEquipado', { nombreUsuario, weaponName });
-
       res.status(200).json({ message: 'Armadura equipada con éxito' });
     } catch (error) {
       console.error('Error en equipArmor:', error);
@@ -188,9 +171,6 @@ export default class UsuarioController {
         res.status(400).json({ message: 'No se pudo equipar la armadura' });
         return;
       }
-
-      // Emitir evento por Socket.IO
-      this.io?.emit('itemEquipado', { nombreUsuario, itemName });
 
       res.status(200).json({ message: 'Armadura equipada con éxito' });
     } catch (error) {
@@ -214,8 +194,6 @@ export default class UsuarioController {
         return;
       }
 
-      this.io?.emit('armorEquipado', { nombreUsuario, armorName });
-
       res.status(200).json({ message: 'Armadura equipada con éxito' });
     } catch (error) {
       console.error('Error en equipArmor:', error);
@@ -237,8 +215,6 @@ export default class UsuarioController {
         res.status(400).json({ message: 'No se pudo equipar heroe' });
         return;
       }
-
-      this.io?.emit('heroEquipado', { nombreUsuario, heroName });
 
       res.status(200).json({ message: 'heroe equipado con éxito' });
     } catch (error) {
@@ -262,7 +238,6 @@ export default class UsuarioController {
         return;
       }
 
-      this.io?.emit('armorDesequipado', { nombreUsuario, armorName });
       res.status(200).json({ message: 'Armadura desequipada con éxito' });
     } catch (error) {
       console.error('Error en unequipArmor:', error);
@@ -284,8 +259,6 @@ export default class UsuarioController {
         return;
       }
      
-      //hola
-      this.io?.emit('weaponDesequipado', { nombreUsuario, weaponName });
       res.status(200).json({ message: 'Arma desequipada con éxito' });
     } catch (error) {
       console.error('Error en unequipWeapon:', error);
@@ -307,7 +280,6 @@ export default class UsuarioController {
         return;
       }
 
-      this.io?.emit('itemDesequipado', { nombreUsuario, itemName });
       res.status(200).json({ message: 'Item desequipado con éxito' });
     } catch (error) {
       console.error('Error en unequipItem:', error);
@@ -334,7 +306,6 @@ export default class UsuarioController {
         return;
       }
 
-      this.io?.emit('epicDesequipado', { nombreUsuario, epicName });
       res
         .status(200)
         .json({ message: 'Habilidad épica desequipada con éxito' });
@@ -360,7 +331,6 @@ export default class UsuarioController {
         return;
       }
 
-      this.io?.emit('heroDesequipado', { nombreUsuario, heroName });
       res.status(200).json({ message: 'Heroe desequipado con éxito' });
     } catch (error) {
       console.error('Error en unequipEpic:', error);
