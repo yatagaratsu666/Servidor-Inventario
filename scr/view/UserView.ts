@@ -1,6 +1,5 @@
 import { Router } from "express";
 import UsuarioController from "../controller/UserController";
-import { Server as IOServer } from "socket.io";
 
 export default class UserView {
   router: Router;
@@ -8,11 +7,6 @@ export default class UserView {
   constructor(private readonly usuarioController: UsuarioController) {
     this.router = Router();
     this.routes();
-  }
-
-  // Método para asignar Socket.IO
-  setIO(io: IOServer) {
-    this.usuarioController.setIO(io);
   }
 
   readonly routes = (): void => {
