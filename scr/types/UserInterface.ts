@@ -10,6 +10,7 @@ export interface UserInterface {
   nombreUsuario: string;
   rol: Roles;
   creditos: number;
+  exp: number;
   inventario: InventarioInterface;
   equipados: EquipmentInterface;
 }

@@ -3,6 +3,7 @@ import { MongoClient } from 'mongodb';
 import { UserInterface } from '../types/UserInterface';
 import InventarioInterface from '../types/InventarioInterface';
 import HeroInterface from '../types/HeroInterface';
+import EquipmentInterface from '../types/EquipementInterface';
 
 /**
  * @class UsuarioModel
@@ -578,6 +579,102 @@ readonly unequipHero = async (
     return result.modifiedCount > 0;
   } catch (error) {
     console.error('Error al desequipar heroe:', error);
+    return false;
+  } finally {
+    await this.client.close();
+  }
+};
+
+readonly aplicarRecompensas = async (
+  recompensa: {
+    Rewards: { playerRewarded: string; credits: number; exp: number };
+    WonItem: { originPlayer: string; itemName: string }[];
+  },
+): Promise<boolean> => {
+  try {
+    await this.client.connect();
+    const db = this.client.db(this.dbName);
+    const collection = db.collection<UserInterface>(this.collectionName);
+
+    const { playerRewarded, credits, exp } = recompensa.Rewards;
+
+    const jugadorDestino = await collection.findOne({ nombreUsuario: playerRewarded });
+    if (!jugadorDestino) {
+      console.error('Jugador recompensado no encontrado');
+      return false;
+    }
+
+    const bulkOps: any[] = [];
+
+    // Sumar créditos y experiencia
+    bulkOps.push({
+      updateOne: {
+        filter: { nombreUsuario: playerRewarded },
+        update: { $inc: { creditos: credits, exp: exp } },
+      },
+    });
+
+    // Validar que WonItem sea un array
+    const wonItems = Array.isArray(recompensa.WonItem) ? recompensa.WonItem : [];
+
+    // Procesar cada item ganado
+    for (const item of wonItems) {
+      const { originPlayer, itemName } = item;
+
+      const jugadorOrigen = await collection.findOne({ nombreUsuario: originPlayer });
+      if (!jugadorOrigen) continue;
+
+      // Buscar el item en EQUIPMENT del jugador origen (no inventario)
+      let itemEncontrado = null;
+      let categoria: keyof EquipmentInterface | null = null;
+
+      const categorias: (keyof EquipmentInterface)[] = [
+        'weapons',
+        'armors',
+        'items',
+        'epicAbility',
+        'hero',
+      ];
+
+      for (const cat of categorias) {
+        const found = jugadorOrigen.equipados[cat].find(
+          (i: any) => i.name.toLowerCase() === itemName.toLowerCase(),
+        );
+        if (found) {
+          itemEncontrado = found;
+          categoria = cat;
+          break;
+        }
+      }
+
+      if (!itemEncontrado || !categoria) continue;
+
+      // Remover del origen
+      bulkOps.push({
+        updateOne: {
+          filter: { nombreUsuario: originPlayer },
+          update: { $pull: { [`equipados.${categoria}`]: { id: itemEncontrado.id } } },
+        },
+      });
+
+      // Agregar al destino
+      bulkOps.push({
+        updateOne: {
+          filter: { nombreUsuario: playerRewarded },
+          update: { $push: { [`inventario.${categoria}`]: itemEncontrado } },
+        },
+      });
+    }
+
+    if (bulkOps.length > 0) {
+      const result = await collection.bulkWrite(bulkOps);
+      console.log('Recompensas aplicadas:', result.modifiedCount);
+      return result.modifiedCount > 0;
+    }
+
+    return false;
+  } catch (error) {
+    console.error('Error al aplicar recompensas:', error);
     return false;
   } finally {
     await this.client.close();
