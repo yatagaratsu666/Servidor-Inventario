@@ -11,7 +11,7 @@ import { Server as IOServer } from 'socket.io';
  */
 export default class UsuarioController {
   private io?: IOServer; // Instancia de Socket.IO
-  constructor(private readonly usuarioModel: UsuarioModel) {}
+  constructor(private readonly usuarioModel: UsuarioModel) { }
 
   setIO(io: IOServer) {
     this.io = io;
@@ -283,7 +283,7 @@ export default class UsuarioController {
         res.status(400).json({ message: 'No se pudo desequipar el arma' });
         return;
       }
-     
+
       //hola
       this.io?.emit('weaponDesequipado', { nombreUsuario, weaponName });
       res.status(200).json({ message: 'Arma desequipada con éxito' });
@@ -367,4 +367,36 @@ export default class UsuarioController {
       res.status(500).json({ message: 'Error al desequipar heroe', error });
     }
   };
+
+  /** Actualizar créditos de un usuario */
+  readonly updateCreditos = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    try {
+      const { nombreUsuario } = req.params as { nombreUsuario: string };
+      const { creditos } = req.body as { creditos: number };
+      if (typeof creditos !== 'number' || creditos < 0) {
+        res.status(400).json({ message: 'El campo "creditos" debe ser un número válido' });
+        return;
+      }
+      const updated = await this.usuarioModel.updateCreditos(nombreUsuario, creditos);
+      if (!updated) {
+        res.status(404).json({ message: `No se pudo actualizar los créditos para el usuario ${nombreUsuario}` });
+        return;
+      }
+      // Emitir evento por Socket.IO
+      this.io?.emit('creditosActualizados', { nombreUsuario, creditos });
+      res.status(200).json({
+        message: `Créditos actualizados con éxito para el usuario ${nombreUsuario}`,
+        creditos,
+      });
+    } catch (error) {
+      console.error('Error en updateCreditos:', error);
+      res.status(500).json({ message: 'Error al actualizar créditos', error });
+    }
+  };
+
+
+
 }
