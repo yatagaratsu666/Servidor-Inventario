@@ -367,46 +367,51 @@ export default class UsuarioController {
     }
   };
 
-  readonly applyRewards = async (
-    req: Request,
-    res: Response
-  ): Promise<void> => {
-    try {
-      const recompensa = req.body as {
-        Rewards: {
-          playerRewarded: string;
-          credits: number;
-          exp: number;
-        };
-        WonItem: { originPlayer: string; itemName: string }[];
+readonly applyRewards = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const recompensa = req.body as {
+      Rewards: {
+        playerRewarded: string;
+        credits: number;  // ahora puede ser negativo
+        exp: number;      // ahora puede ser negativo
       };
+      WonItem: { originPlayer: string; itemName: string }[];
+    };
 
-      // Validaciones básicas
-      if (
-        !recompensa ||
-        !recompensa.Rewards ||
-        typeof recompensa.Rewards.playerRewarded !== 'string' ||
-        typeof recompensa.Rewards.credits !== 'number' ||
-        typeof recompensa.Rewards.exp !== 'number' ||
-        !Array.isArray(recompensa.WonItem)
-      ) {
-        res.status(400).json({ message: 'Datos de recompensa inválidos' });
-        return;
-      }
-
-      const success = await this.usuarioModel.aplicarRecompensas(recompensa);
-
-      if (!success) {
-        res.status(400).json({ message: 'No se pudo aplicar la recompensa' });
-        return;
-      }
-
-      res
-        .status(200)
-        .json({ message: 'Recompensa aplicada correctamente', recompensa });
-    } catch (error) {
-      console.error('Error en applyRewards:', error);
-      res.status(500).json({ message: 'Error al aplicar recompensas', error });
+    // Validaciones básicas (solo verificar tipo number, sin importar signo)
+    if (
+      !recompensa ||
+      !recompensa.Rewards ||
+      typeof recompensa.Rewards.playerRewarded !== 'string' ||
+      typeof recompensa.Rewards.credits !== 'number' ||   // permite negativos
+      typeof recompensa.Rewards.exp !== 'number' ||       // permite negativos
+      !Array.isArray(recompensa.WonItem)
+    ) {
+      res.status(400).json({ message: 'Datos de recompensa inválidos' });
+      return;
     }
-  };
+
+    // Opcional: log para debug valores negativos
+    if (recompensa.Rewards.credits < 0 || recompensa.Rewards.exp < 0) {
+      console.log('Recompensa con valores negativos:', recompensa);
+    }
+
+    const success = await this.usuarioModel.aplicarRecompensas(recompensa);
+
+    if (!success) {
+      res.status(400).json({ message: 'No se pudo aplicar la recompensa' });
+      return;
+    }
+
+    res
+      .status(200)
+      .json({ message: 'Recompensa aplicada correctamente', recompensa });
+  } catch (error) {
+    console.error('Error en applyRewards:', error);
+    res.status(500).json({ message: 'Error al aplicar recompensas', error });
+  }
+};
 }
