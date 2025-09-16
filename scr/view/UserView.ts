@@ -27,5 +27,6 @@ export default class UserView {
     this.router.get('/usuarios/:nombreUsuario/hero', this.usuarioController.getHeroByUsuarioId);
     this.router.post('/usuarios/rewards', this.usuarioController.applyRewards);
     this.router.put('/usuarios/:nombreUsuario/creditos', this.usuarioController.updateCreditos);
+    this.router.patch('/usuarios/transfer-item', this.usuarioController.transferItem);
   };
 }

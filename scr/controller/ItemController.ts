@@ -235,7 +235,4 @@ export default class ItemController {
       res.status(500).json({ message: "Error al actualizar status del ítem", error });
     }
   };
-
-
-
 }
