@@ -197,4 +197,31 @@ export default class ItemModel {
       await this.client.close();
     }
   };
+
+
+  readonly getItemStatusById = async (id: number): Promise<boolean | null> => {
+    try {
+      await this.client.connect();
+      const db = this.client.db(this.dbName);
+      const collection = db.collection<ItemInterface>(this.collectionName);
+
+      const item = await collection.findOne(
+        { id },
+        { projection: { status: 1 } } // solo trae el campo status
+      );
+
+      if (!item) {
+        console.log(`No se encontró ítem con id ${id}`);
+        return null;
+      }
+
+      console.log(`Ítem con id ${id} tiene status = ${item.status}`);
+      return item.status;
+    } catch (error) {
+      console.error("Error al consultar el status del ítem:", error);
+      throw error;
+    } finally {
+      await this.client.close();
+    }
+  };
 }

@@ -9,10 +9,10 @@ import ItemInterface from "../types/ItemInterface";
  */
 export default class ItemController {
 
-    /**
-   * @param {ItemModel} itemModel Instancia del modelo `ItemModel` para interactuar con la base de datos.
-   */
-  constructor(private readonly itemModel: ItemModel) {}
+  /**
+ * @param {ItemModel} itemModel Instancia del modelo `ItemModel` para interactuar con la base de datos.
+ */
+  constructor(private readonly itemModel: ItemModel) { }
 
   /**
    * @async
@@ -193,4 +193,49 @@ export default class ItemController {
       res.status(500).json({ message: "Error al actualizar item", error });
     }
   };
+
+  /**
+   * @async
+   * @function updateItemStatus
+   * @description Actualiza el estado (activo/inactivo) de un ítem por su ID.
+   * @param {Request} req Objeto de la solicitud HTTP que contiene el parámetro `id` y el body con el nuevo estado.
+   * @param {Response} res Objeto de la respuesta HTTP.
+   * @returns {Promise<void>} Devuelve el ítem actualizado o un error si no existe.
+   */
+  readonly updateItemStatus = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params as { id: string };
+      const itemId = parseInt(id, 10);
+
+      if (isNaN(itemId)) {
+        res.status(400).json({ message: "ID inválido" });
+        return;
+      }
+
+      const { status } = req.body as { status: boolean };
+
+      if (typeof status !== "boolean") {
+        res.status(400).json({ message: "El campo 'status' debe ser boolean" });
+        return;
+      }
+
+      const updatedItem = await this.itemModel.updateItemById(itemId, { status });
+
+      if (!updatedItem) {
+        res.status(404).json({ message: `No se encontró ítem con id ${itemId}` });
+        return;
+      }
+
+      res.status(200).json({
+        message: `Ítem con id ${itemId} actualizado con éxito`,
+        item: updatedItem,
+      });
+    } catch (error) {
+      console.error("Error en updateItemStatus:", error);
+      res.status(500).json({ message: "Error al actualizar status del ítem", error });
+    }
+  };
+
+
+
 }

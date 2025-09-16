@@ -147,7 +147,13 @@ export default class ItemView {
      *         description: Ítem no encontrado.
      */
     this.router.put("/items/modify/:id", this.itemController.updateItem);
+
+
+
+    this.router.patch("/items/:id/status", this.itemController.updateItemStatus);
   };
+
+
 }
 
 /**
