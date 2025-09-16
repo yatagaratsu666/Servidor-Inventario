@@ -15,4 +15,4 @@ COPY . .
 EXPOSE 1882
 
 # Ejecutar el JS compilado
-CMD ["node", "build/scr/Product.js"]
+CMD ["npm", "run", "dev"]
