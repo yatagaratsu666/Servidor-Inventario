@@ -586,27 +586,37 @@ export default class UsuarioModel {
     }
   };
 
-  readonly updateCreditos = async (
-    nombreUsuario: string,
-    nuevosCreditos: number,
-  ): Promise<boolean> => {
-    try {
-      await this.client.connect();
-      const db = this.client.db(this.dbName);
-      const collection = db.collection<UserInterface>(this.collectionName);
+readonly incrementarCreditos = async (
+  nombreUsuario: string,
+  creditosExtra: number,
+): Promise<number | null> => {
+  try {
+    await this.client.connect();
+    const db = this.client.db(this.dbName);
+    const collection = db.collection<UserInterface>(this.collectionName);
 
-      const result = await collection.updateOne(
-        { nombreUsuario },
-        { $set: { creditos: nuevosCreditos } },
-      );
-      return result.modifiedCount > 0;
-    } catch (error) {
-      console.error('Error al actualizar créditos:', error);
-      return false;
-    } finally {
-      await this.client.close();
+    // Incrementar créditos
+    const result = await collection.updateOne(
+      { nombreUsuario },
+      { $inc: { creditos: creditosExtra } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return null; // no se encontró o no se modificó nada
     }
-  };
+
+    // Obtener el valor actualizado
+    const user = await collection.findOne({ nombreUsuario });
+    return user ? user.creditos : null;
+  } catch (error) {
+    console.error('Error al incrementar créditos:', error);
+    return null;
+  } finally {
+    await this.client.close();
+  }
+};
+
+
 
 readonly aplicarRecompensas = async (
   recompensa: {
