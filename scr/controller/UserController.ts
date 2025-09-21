@@ -339,33 +339,36 @@ export default class UsuarioController {
   };
 
   /** Actualizar créditos de un usuario */
-  readonly updateCreditos = async (
-    req: Request,
-    res: Response,
-  ): Promise<void> => {
-    try {
-      const { nombreUsuario } = req.params as { nombreUsuario: string };
-      const { creditos } = req.body as { creditos: number };
-      if (typeof creditos !== 'number' || creditos < 0) {
-        res.status(400).json({ message: 'El campo "creditos" debe ser un número válido' });
-        return;
-      }
-      const updated = await this.usuarioModel.updateCreditos(nombreUsuario, creditos);
-      if (!updated) {
-        res.status(404).json({ message: `No se pudo actualizar los créditos para el usuario ${nombreUsuario}` });
-        return;
-      }
-      // Emitir evento por Socket.IO
+readonly incrementarCreditos = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { nombreUsuario } = req.params as { nombreUsuario: string };
+    const { creditos } = req.body as { creditos: number };
 
-      res.status(200).json({
-        message: `Créditos actualizados con éxito para el usuario ${nombreUsuario}`,
-        creditos,
-      });
-    } catch (error) {
-      console.error('Error en updateCreditos:', error);
-      res.status(500).json({ message: 'Error al actualizar créditos', error });
+    if (typeof creditos !== 'number') {
+      res.status(400).json({ message: 'El campo "creditos" debe ser un número válido' });
+      return;
     }
-  };
+
+    const nuevosCreditos = await this.usuarioModel.incrementarCreditos(nombreUsuario, creditos);
+
+    if (nuevosCreditos === null) {
+      res.status(404).json({ message: `Usuario ${nombreUsuario} no encontrado` });
+      return;
+    }
+
+    res.status(200).json({
+      message: `Créditos actualizados con éxito para el usuario ${nombreUsuario}`,
+      creditos: nuevosCreditos,
+    });
+  } catch (error) {
+    console.error('Error en incrementarCreditos:', error);
+    res.status(500).json({ message: 'Error al actualizar créditos', error });
+  }
+};
+
 
 readonly applyRewards = async (
   req: Request,
@@ -414,4 +417,49 @@ readonly applyRewards = async (
     res.status(500).json({ message: 'Error al aplicar recompensas', error });
   }
 };
+
+  /**
+ * @async
+ * @function transferItem
+ * @description Transfiere un ítem del inventario de un usuario a otro.
+ * @param {Request} req Objeto de la solicitud HTTP que contiene `originUser`, `targetUser` y `itemName` en el body.
+ * @param {Response} res Objeto de la respuesta HTTP.
+ * @returns {Promise<void>} Devuelve un mensaje de éxito o error según el resultado.
+ * @example
+ * // PATCH /users/transfer-item
+ * {
+ *   "originUser": "Player1",
+ *   "targetUser": "Player2",
+ *   "itemName": "Espada Legendaria"
+ * }
+ */
+readonly transferItem = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { originUser, targetUser, itemName } = req.body;
+
+    if (!originUser || !targetUser || !itemName) {
+      res.status(400).json({ message: "Faltan datos: originUser, targetUser o itemName" });
+      return;
+    }
+
+    const success = await this.usuarioModel.transferItem(originUser, targetUser, itemName);
+
+    if (!success) {
+      res.status(404).json({
+        message: `No se pudo transferir el ítem "${itemName}" de ${originUser} a ${targetUser}`,
+      });
+      return;
+    }
+
+    res.status(200).json({
+      message: `Ítem "${itemName}" transferido de ${originUser} a ${targetUser} con éxito`,
+    });
+  } catch (error) {
+    console.error("Error en transferItem:", error);
+    res.status(500).json({ message: "Error al transferir ítem", error });
+  }
+};
+
+
+
 }

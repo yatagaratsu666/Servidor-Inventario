@@ -586,27 +586,37 @@ export default class UsuarioModel {
     }
   };
 
-  readonly updateCreditos = async (
-    nombreUsuario: string,
-    nuevosCreditos: number,
-  ): Promise<boolean> => {
-    try {
-      await this.client.connect();
-      const db = this.client.db(this.dbName);
-      const collection = db.collection<UserInterface>(this.collectionName);
+readonly incrementarCreditos = async (
+  nombreUsuario: string,
+  creditosExtra: number,
+): Promise<number | null> => {
+  try {
+    await this.client.connect();
+    const db = this.client.db(this.dbName);
+    const collection = db.collection<UserInterface>(this.collectionName);
 
-      const result = await collection.updateOne(
-        { nombreUsuario },
-        { $set: { creditos: nuevosCreditos } },
-      );
-      return result.modifiedCount > 0;
-    } catch (error) {
-      console.error('Error al actualizar créditos:', error);
-      return false;
-    } finally {
-      await this.client.close();
+    // Incrementar créditos
+    const result = await collection.updateOne(
+      { nombreUsuario },
+      { $inc: { creditos: creditosExtra } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return null; // no se encontró o no se modificó nada
     }
-  };
+
+    // Obtener el valor actualizado
+    const user = await collection.findOne({ nombreUsuario });
+    return user ? user.creditos : null;
+  } catch (error) {
+    console.error('Error al incrementar créditos:', error);
+    return null;
+  } finally {
+    await this.client.close();
+  }
+};
+
+
 
 readonly aplicarRecompensas = async (
   recompensa: {
@@ -703,4 +713,117 @@ readonly aplicarRecompensas = async (
     await this.client.close();
   }
 };
+
+/**
+ * @async
+ * @function transferItem
+ * @description Transfiere un ítem del inventario de un usuario a otro.
+ * @param {string} originUser - Nombre del usuario que entrega el ítem.
+ * @param {string} targetUser - Nombre del usuario que recibe el ítem.
+ * @param {string} itemName - Nombre del ítem a transferir.
+ * @returns {Promise<boolean>} True si la transferencia fue exitosa, False si no se encontró o falló.
+ */
+readonly transferItem = async (
+  originUser: string,
+  targetUser: string,
+  itemName: string,
+): Promise<boolean> => {
+  try {
+    await this.client.connect();
+    const db = this.client.db(this.dbName);
+    const collection = db.collection<UserInterface>(this.collectionName);
+
+    // Validar que ambos usuarios existan
+    const [usuarioOrigen, usuarioDestino] = await Promise.all([
+      collection.findOne({ nombreUsuario: originUser }),
+      collection.findOne({ nombreUsuario: targetUser }),
+    ]);
+
+    if (!usuarioOrigen || !usuarioDestino) {
+      console.error("Usuario origen o destino no encontrado");
+      return false;
+    }
+
+    // Categorías posibles donde buscar
+    const categorias: (keyof EquipmentInterface)[] = [
+      "weapons",
+      "armors",
+      "items",
+      "epicAbility",
+      "hero",
+    ];
+
+    let itemEncontrado: any = null;
+    let categoria: keyof EquipmentInterface | null = null;
+    let origen: "inventario" | "equipados" | null = null;
+
+    // 1. Buscar en inventario
+    for (const cat of categorias) {
+      const found = usuarioOrigen.inventario[cat].find(
+        (i: any) => i.name.toLowerCase() === itemName.toLowerCase(),
+      );
+      if (found) {
+        itemEncontrado = found;
+        categoria = cat;
+        origen = "inventario";
+        break;
+      }
+    }
+
+    // 2. Si no está en inventario, buscar en equipados
+    if (!itemEncontrado) {
+      for (const cat of categorias) {
+        const found = usuarioOrigen.equipados[cat].find(
+          (i: any) => i.name.toLowerCase() === itemName.toLowerCase(),
+        );
+        if (found) {
+          itemEncontrado = found;
+          categoria = cat;
+          origen = "equipados";
+          break;
+        }
+      }
+    }
+
+    if (!itemEncontrado || !categoria || !origen) {
+      console.error(`Ítem ${itemName} no encontrado en ${originUser}`);
+      return false;
+    }
+
+    // Bulk operations: quitar del origen y agregar al destino
+    const bulkOps: any[] = [
+      {
+        updateOne: {
+          filter: { nombreUsuario: originUser },
+          update: { $pull: { [`${origen}.${categoria}`]: { id: itemEncontrado.id } } },
+        },
+      },
+      {
+        updateOne: {
+          filter: { nombreUsuario: targetUser },
+          update: { $push: { [`inventario.${categoria}`]: itemEncontrado } },
+        },
+      },
+    ];
+
+    const result = await collection.bulkWrite(bulkOps);
+
+    if (result.modifiedCount > 0) {
+      console.log(
+        `Ítem "${itemName}" transferido de ${originUser} (${origen}) a ${targetUser}`,
+      );
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.error("Error al transferir ítem:", error);
+    return false;
+  } finally {
+    await this.client.close();
+  }
+};
+
+
+
 }
