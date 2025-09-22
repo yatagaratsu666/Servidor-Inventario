@@ -21,7 +21,7 @@ export default interface HeroInterface {
   level: number;
 
   /** @description EXP acumulada dentro del nivel actual (0..expRequerida-1) */
-  experience?: number;
+  experience?: number;
 
   /** @description Cantidad de poder del héroe. */
   power: number;

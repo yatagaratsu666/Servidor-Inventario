@@ -617,11 +617,57 @@ readonly incrementarCreditos = async (
 };
 
 
+// helpers
+private expRequiredForLevel(level: number): number {
+  // Fórmula oficial: 100 * (1.2 ^ (Nivel - 1))
+  return Math.ceil(100 * Math.pow(1.2, Math.max(0, level - 1)));
+}
+
+private applyExpToHero(hero: any, expDelta: number): any {
+  const MAX_LEVEL = 8;
+  const h = { ...hero };
+  h.level = typeof h.level === 'number' ? h.level : 1;
+  h.experience = typeof h.experience === 'number' ? h.experience : 0;
+
+  if (h.level >= MAX_LEVEL) {
+    // Al tope: solo aceptamos exp negativa (reduce barra actual; no baja nivel)
+    if (expDelta < 0) h.experience = Math.max(0, h.experience + expDelta);
+    return h;
+  }
+
+  if (expDelta >= 0) {
+    let remaining = expDelta;
+    while (remaining > 0 && h.level < MAX_LEVEL) {
+      const required = this.expRequiredForLevel(h.level);
+      const need = required - h.experience;
+      if (remaining >= need) {
+        h.level += 1;
+        h.experience = 0;
+        remaining -= need;
+        if (h.level >= MAX_LEVEL) {
+          h.level = MAX_LEVEL;
+          break; // ignoramos exceso de exp en nivel máximo
+        }
+      } else {
+        h.experience += remaining;
+        remaining = 0;
+      }
+    }
+  } else {
+    // EXP negativa (no baja de nivel)
+    h.experience = Math.max(0, h.experience + expDelta);
+  }
+
+  return h;
+}
+
 
 readonly aplicarRecompensas = async (
   recompensa: {
-    Rewards: { playerRewarded: string; credits: number; exp: number };
-    WonItem: { originPlayer: string; itemName: string }[];
+    Rewards?: { playerRewarded: string; credits: number; exp: number; heroName?: string; heroId?: number };
+    rewards?: { playerRewarded: string; credits: number; exp: number; heroName?: string; heroId?: number };
+    WonItem?: { originPlayer: string; itemName: string }[];
+    wonItem?: { originPlayer: string; itemName: string }[];
   },
 ): Promise<boolean> => {
   try {
@@ -629,74 +675,129 @@ readonly aplicarRecompensas = async (
     const db = this.client.db(this.dbName);
     const collection = db.collection<UserInterface>(this.collectionName);
 
-    const { playerRewarded, credits, exp } = recompensa.Rewards;
+    // Soportar Rewards/rewards y WonItem/wonItem
+    const rewards = (recompensa.Rewards || recompensa.rewards) as any;
+    const wonItems = (recompensa.WonItem || recompensa.wonItem || []) as any[];
 
-    const jugadorDestino = await collection.findOne({ nombreUsuario: playerRewarded });
-    if (!jugadorDestino) {
+    if (!rewards || typeof rewards.playerRewarded !== 'string' || typeof rewards.credits !== 'number' || typeof rewards.exp !== 'number') {
+      console.error('Payload de recompensas inválido:', recompensa);
+      return false;
+    }
+
+    const { playerRewarded, credits, exp, heroName, heroId } = rewards;
+
+    // Traer usuario destino
+    const usuario = await collection.findOne({ nombreUsuario: playerRewarded });
+    if (!usuario) {
       console.error('Jugador recompensado no encontrado');
       return false;
     }
 
     const bulkOps: any[] = [];
 
-    // Sumar créditos y experiencia
+    // 1) Créditos (permitir negativos)
     bulkOps.push({
       updateOne: {
         filter: { nombreUsuario: playerRewarded },
-        update: { $inc: { creditos: credits, exp: exp } },
+        update: { $inc: { creditos: credits } },
       },
     });
 
-    // Validar que WonItem sea un array
-    const wonItems = Array.isArray(recompensa.WonItem) ? recompensa.WonItem : [];
-
-    // Procesar cada item ganado
-    for (const item of wonItems) {
-      const { originPlayer, itemName } = item;
-
-      const jugadorOrigen = await collection.findOne({ nombreUsuario: originPlayer });
-      if (!jugadorOrigen) continue;
-
-      // Buscar el item en EQUIPMENT del jugador origen (no inventario)
-      let itemEncontrado = null;
-      let categoria: keyof EquipmentInterface | null = null;
-
-      const categorias: (keyof EquipmentInterface)[] = [
-        'weapons',
-        'armors',
-        'items',
-        'epicAbility',
-        'hero',
+    // 2) EXP al héroe (si exp !== 0)
+    if (exp !== 0) {
+      type Loc = { path: 'equipados.hero' | 'inventario.hero'; list: any[]; };
+      const locations: Loc[] = [
+        { path: 'equipados.hero', list: (usuario.equipados?.hero || []) as any[] },
+        { path: 'inventario.hero', list: (usuario.inventario?.hero || []) as any[] },
       ];
 
-      for (const cat of categorias) {
-        const found = jugadorOrigen.equipados[cat].find(
-          (i: any) => i.name.toLowerCase() === itemName.toLowerCase(),
-        );
-        if (found) {
-          itemEncontrado = found;
-          categoria = cat;
-          break;
+      let targetHero: any | null = null;
+      let targetPath: Loc['path'] | null = null;
+
+      // Preferir heroId/heroName
+      const matchBy = (h: any) =>
+        (typeof heroId === 'number' && h.id === heroId) ||
+        (typeof heroName === 'string' && h.name?.toLowerCase() === heroName.toLowerCase());
+
+      for (const loc of locations) {
+        const byExplicit = loc.list.find(matchBy);
+        if (byExplicit) { targetHero = byExplicit; targetPath = loc.path; break; }
+      }
+
+      // Heurística por defecto: 1 héroe equipado o 1 en inventario
+      if (!targetHero) {
+        const equipped = locations[0]?.list ?? [];
+        if (equipped.length === 1) {
+          targetHero = equipped[0];
+          targetPath = 'equipados.hero';
+        } else if (
+          equipped.length === 0 &&
+          (locations[1]?.list?.length === 1)
+        ) {
+          targetHero = locations[1].list[0];
+          targetPath = 'inventario.hero';
         }
       }
 
-      if (!itemEncontrado || !categoria) continue;
+      if (!targetHero || !targetPath) {
+        console.warn('No se pudo determinar el héroe para aplicar EXP. Se omite EXP.');
+      } else {
+        const updatedHero = this.applyExpToHero(targetHero, exp);
 
-      // Remover del origen
-      bulkOps.push({
-        updateOne: {
-          filter: { nombreUsuario: originPlayer },
-          update: { $pull: { [`equipados.${categoria}`]: { id: itemEncontrado.id } } },
-        },
-      });
+        // Persistir con arrayFilters por id o por nombre
+        const arrayFilter = targetHero.id != null
+          ? [{ 'h.id': targetHero.id }]
+          : [{ 'h.name': targetHero.name }];
 
-      // Agregar al destino
-      bulkOps.push({
-        updateOne: {
-          filter: { nombreUsuario: playerRewarded },
-          update: { $push: { [`inventario.${categoria}`]: itemEncontrado } },
-        },
-      });
+        bulkOps.push({
+          updateOne: {
+            filter: { nombreUsuario: playerRewarded },
+            update: { $set: { [`${targetPath}.$[h]`]: updatedHero } },
+            arrayFilters: arrayFilter,
+          },
+        });
+      }
+    }
+
+    // 3) Transferir ítems (si hay)
+    if (Array.isArray(wonItems) && wonItems.length > 0) {
+      for (const item of wonItems) {
+        const { originPlayer, itemName } = item;
+        if (!originPlayer || !itemName) continue;
+
+        const usuarioOrigen = await collection.findOne({ nombreUsuario: originPlayer });
+        if (!usuarioOrigen) continue;
+
+        let itemEncontrado: any = null;
+        let categoria: keyof EquipmentInterface | null = null;
+
+        const categorias: (keyof EquipmentInterface)[] = ['weapons', 'armors', 'items', 'epicAbility', 'hero'];
+
+        for (const cat of categorias) {
+          const found = (usuarioOrigen.equipados?.[cat] || []).find(
+            (i: any) => typeof i?.name === 'string' && i.name.toLowerCase() === String(itemName).toLowerCase()
+          );
+          if (found) { itemEncontrado = found; categoria = cat; break; }
+        }
+
+        if (!itemEncontrado || !categoria) continue;
+
+        // Remover del origen
+        bulkOps.push({
+          updateOne: {
+            filter: { nombreUsuario: originPlayer },
+            update: { $pull: { [`equipados.${categoria}`]: { id: itemEncontrado.id } } },
+          },
+        });
+
+        // Agregar al inventario del destino
+        bulkOps.push({
+          updateOne: {
+            filter: { nombreUsuario: playerRewarded },
+            update: { $push: { [`inventario.${categoria}`]: itemEncontrado } },
+          },
+        });
+      }
     }
 
     if (bulkOps.length > 0) {
@@ -713,6 +814,7 @@ readonly aplicarRecompensas = async (
     await this.client.close();
   }
 };
+
 
 /**
  * @async

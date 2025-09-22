@@ -395,24 +395,30 @@ readonly applyRewards = async (
     };
 
     const r = (recompensa.Rewards || recompensa.rewards) as any;
-    if (!r || typeof r.playerRewarded !== 'string' || typeof r.credits !== 'number' || typeof r.exp !== 'number') {
-      res.status(400).json({ message: 'Datos de recompensa inválidos' });
+    if (
+      !r ||
+      typeof r.playerRewarded !== "string" ||
+      typeof r.credits !== "number" ||
+      typeof r.exp !== "number"
+    ) {
+      res.status(400).json({ "message": "Datos de recompensa inválidos" });
       return;
     }
 
     const success = await this.usuarioModel.aplicarRecompensas(recompensa as any);
 
     if (!success) {
-      res.status(400).json({ message: 'No se pudo aplicar la recompensa' });
+      res.status(400).json({ "message": "No se pudo aplicar la recompensa" });
       return;
     }
 
-    res.status(200).json({ message: 'Recompensa aplicada correctamente', recompensa });
+    res.status(200).json({ "message": "Recompensa aplicada correctamente", "recompensa": recompensa });
   } catch (error) {
-    console.error('Error en applyRewards:', error);
-    res.status(500).json({ message: 'Error al aplicar recompensas', error });
-  }
+    console.error("Error en applyRewards:", error);
+    res.status(500).json({ "message": "Error al aplicar recompensas", "error": error });
+  }
 };
+
 
   /**
  * @async
