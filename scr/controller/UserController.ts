@@ -376,46 +376,42 @@ readonly applyRewards = async (
 ): Promise<void> => {
   try {
     const recompensa = req.body as {
-      Rewards: {
+      Rewards?: {
         playerRewarded: string;
-        credits: number;  // ahora puede ser negativo
-        exp: number;      // ahora puede ser negativo
+        credits: number;
+        exp: number;
+        heroName?: string;
+        heroId?: number;
       };
-      WonItem: { originPlayer: string; itemName: string }[];
+      rewards?: {
+        playerRewarded: string;
+        credits: number;
+        exp: number;
+        heroName?: string;
+        heroId?: number;
+      };
+      WonItem?: { originPlayer: string; itemName: string }[];
+      wonItem?: { originPlayer: string; itemName: string }[];
     };
 
-    // Validaciones básicas (solo verificar tipo number, sin importar signo)
-    if (
-      !recompensa ||
-      !recompensa.Rewards ||
-      typeof recompensa.Rewards.playerRewarded !== 'string' ||
-      typeof recompensa.Rewards.credits !== 'number' ||   // permite negativos
-      typeof recompensa.Rewards.exp !== 'number' ||       // permite negativos
-      !Array.isArray(recompensa.WonItem)
-    ) {
+    const r = (recompensa.Rewards || recompensa.rewards) as any;
+    if (!r || typeof r.playerRewarded !== 'string' || typeof r.credits !== 'number' || typeof r.exp !== 'number') {
       res.status(400).json({ message: 'Datos de recompensa inválidos' });
       return;
     }
 
-    // Opcional: log para debug valores negativos
-    if (recompensa.Rewards.credits < 0 || recompensa.Rewards.exp < 0) {
-      console.log('Recompensa con valores negativos:', recompensa);
-    }
-
-    const success = await this.usuarioModel.aplicarRecompensas(recompensa);
+    const success = await this.usuarioModel.aplicarRecompensas(recompensa as any);
 
     if (!success) {
       res.status(400).json({ message: 'No se pudo aplicar la recompensa' });
       return;
     }
 
-    res
-      .status(200)
-      .json({ message: 'Recompensa aplicada correctamente', recompensa });
+    res.status(200).json({ message: 'Recompensa aplicada correctamente', recompensa });
   } catch (error) {
     console.error('Error en applyRewards:', error);
-    res.status(500).json({ message: 'Error al aplicar recompensas', error });
-  }
+    res.status(500).json({ message: 'Error al aplicar recompensas', error });
+  }
 };
 
   /**
