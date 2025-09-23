@@ -196,4 +196,45 @@ export default class ArmorModel {
       await this.client.close();
     }
   };
+
+    /**
+   * @async
+   * @function updateArmorById
+   * @description Actualiza una armadura por su ID con los datos proporcionados.
+   * @param {number} id - ID de la armadura a actualizar.
+   * @param {Partial<ArmorInterface>} updatedArmor - Campos a actualizar.
+   * @returns {Promise<ArmorInterface | null>} Devuelve la armadura actualizada o null si no existe.
+   */
+  readonly updateArmorStatus = async (
+    id: number,
+    updatedArmor: Partial<ArmorInterface>
+  ): Promise<ArmorInterface | null> => {
+    try {
+      await this.client.connect();
+      const db = this.client.db(this.dbName);
+      const collection = db.collection<ArmorInterface>(this.collectionName);
+
+      const updateResult = await collection.updateOne(
+        { id },
+        { $set: updatedArmor }
+      );
+
+      if (updateResult.matchedCount === 0) {
+        console.log(`No se encontró armadura con id ${id}`);
+        return null;
+      }
+
+      console.log(`Armadura con id ${id} actualizada con éxito`);
+
+      const updatedDoc = await collection.findOne({ id });
+      return updatedDoc;
+    } catch (error) {
+      console.error("Error al actualizar armadura:", error);
+      throw error;
+    } finally {
+      await this.client.close();
+    }
+  };
+
+
 }

@@ -153,4 +153,39 @@ export default class WeaponController {
       res.status(500).json({ message: "Error al actualizar arma", error });
     }
   };
+
+    readonly updateWeaponStatus = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params as { id: string };
+      const weaponId = parseInt(id, 10);
+
+      if (isNaN(weaponId)) {
+        res.status(400).json({ message: "ID inválido" });
+        return;
+      }
+
+      const { status } = req.body as { status: boolean };
+
+      if (typeof status !== "boolean") {
+        res.status(400).json({ message: "El campo 'status' debe ser boolean" });
+        return;
+      }
+
+      const updatedWeapon = await this.weaponModel.updateWeaponStatus(weaponId, { status });
+
+      if (!updatedWeapon) {
+        res.status(404).json({ message: `No se encontró arma con id ${weaponId}` });
+        return;
+      }
+
+      res.status(200).json({
+        message: `Arma con id ${weaponId} actualizada con éxito`,
+        weapon: updatedWeapon,
+      });
+    } catch (error) {
+      console.error("Error en updateWeaponStatus:", error);
+      res.status(500).json({ message: "Error al actualizar status del arma", error });
+    }
+  };
+
 }

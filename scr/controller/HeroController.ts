@@ -205,4 +205,39 @@ export default class HeroController {
       res.status(500).json({ message: 'Error al actualizar item', error });
     }
   };
+
+    readonly updateHeroStatus = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params as { id: string };
+      const heroId = parseInt(id, 10);
+
+      if (isNaN(heroId)) {
+        res.status(400).json({ message: "ID inválido" });
+        return;
+      }
+
+      const { status } = req.body as { status: boolean };
+
+      if (typeof status !== "boolean") {
+        res.status(400).json({ message: "El campo 'status' debe ser boolean" });
+        return;
+      }
+
+      const updatedHero = await this.heroModel.updateHeroStatus(heroId, { status });
+
+      if (!updatedHero) {
+        res.status(404).json({ message: `No se encontró héroe con id ${heroId}` });
+        return;
+      }
+
+      res.status(200).json({
+        message: `Héroe con id ${heroId} actualizado con éxito`,
+        hero: updatedHero,
+      });
+    } catch (error) {
+      console.error("Error en updateHeroStatus:", error);
+      res.status(500).json({ message: "Error al actualizar status del héroe", error });
+    }
+  };
+
 }
