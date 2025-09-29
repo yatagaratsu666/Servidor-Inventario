@@ -185,7 +185,7 @@ export default class ItemModel {
         console.log(`No se encontró ítem con id ${id}`);
         return null;
       }
-
+    
       console.log(`Ítem con id ${id} actualizado con éxito`);
 
       const updatedDoc = await collection.findOne({ id });
