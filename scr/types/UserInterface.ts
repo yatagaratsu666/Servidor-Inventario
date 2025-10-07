@@ -7,6 +7,7 @@ export enum Roles {
 }
 
 export interface UserInterface {
+  avatar: string;
   nombreUsuario: string;
   rol: Roles;
   creditos: number;
