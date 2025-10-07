@@ -197,4 +197,45 @@ export default class HeroModel {
       await this.client.close();
     }
   };
+
+    /**
+   * @async
+   * @function updateHeroById
+   * @description Actualiza un héroe por su ID con los datos proporcionados.
+   * @param {number} id - ID del héroe a actualizar.
+   * @param {Partial<HeroInterface>} updatedHero - Campos a actualizar.
+   * @returns {Promise<HeroInterface | null>} Devuelve el héroe actualizado o null si no existe.
+   */
+  readonly updateHeroStatus = async (
+    id: number,
+    updatedHero: Partial<HeroInterface>
+  ): Promise<HeroInterface | null> => {
+    try {
+      await this.client.connect();
+      const db = this.client.db(this.dbName);
+      const collection = db.collection<HeroInterface>(this.collectionName);
+
+      const updateResult = await collection.updateOne(
+        { id },
+        { $set: updatedHero }
+      );
+
+      if (updateResult.matchedCount === 0) {
+        console.log(`No se encontró héroe con id ${id}`);
+        return null;
+      }
+
+      console.log(`Héroe con id ${id} actualizado con éxito`);
+
+      const updatedDoc = await collection.findOne({ id });
+      return updatedDoc;
+    } catch (error) {
+      console.error("Error al actualizar héroe:", error);
+      throw error;
+    } finally {
+      await this.client.close();
+    }
+  };
+
+
 }

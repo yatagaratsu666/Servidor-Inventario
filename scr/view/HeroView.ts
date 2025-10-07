@@ -147,6 +147,10 @@ export default class HeroView {
      *         description: Héroe no encontrado.
      */
     this.router.put("/heroes/modify/:id", this.heroController.updateHero);
+
+    this.router.patch("/heroes/:id/status", this.heroController.updateHeroStatus);
+
+    
   };
 }
 

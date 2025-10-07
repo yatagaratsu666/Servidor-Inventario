@@ -1,7 +1,6 @@
 // src/controller/UsuarioController.ts
 import { Request, Response } from 'express';
 import UsuarioModel from '../model/UserModel';
-import { UserInterface } from '../types/UserInterface';
 import InventarioInterface from '../types/InventarioInterface';
 
 /**
@@ -55,31 +54,45 @@ export default class UsuarioController {
   };
 
   /** Crear uno o varios usuarios */
-  readonly createUsuarios = async (
-    req: Request,
-    res: Response,
-  ): Promise<void> => {
-    try {
-      const usuarios = req.body as UserInterface | UserInterface[];
+readonly createUsuarios = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { nombres, apellidos, apodo, email, password } = req.body;
 
-      if (!usuarios || (Array.isArray(usuarios) && usuarios.length === 0)) {
-        res.status(400).json({ message: 'No se recibieron datos de usuario' });
-        return;
-      }
-
-      const created = await this.usuarioModel.createUsuarios(usuarios);
-
-      if (!created) {
-        res.status(400).json({ message: 'Todos los usuarios ya existen' });
-        return;
-      }
-
-      res.status(201).json({ message: 'Usuarios creados con éxito', usuarios });
-    } catch (error) {
-      console.error('Error en createUsuarios:', error);
-      res.status(500).json({ message: 'Error al crear usuarios', error });
+    // Validar que vengan todos los campos
+    if (!nombres || !apellidos || !apodo || !email || !password) {
+      res.status(400).json({ message: "Faltan datos obligatorios del usuario." });
+      return;
     }
-  };
+
+    // Crear usuario en la base de datos usando el modelo
+    const creado = await this.usuarioModel.createUsuario(apodo);
+
+    if (!creado) {
+      res.status(400).json({ message: "El usuario ya existe o no se pudo crear." });
+      return;
+    }
+
+    res.status(201).json({
+      message: "Usuario creado con éxito.",
+      usuario: {
+        nombres,
+        apellidos,
+        apodo,
+        email,
+      },
+    });
+  } catch (error) {
+    console.error("❌ Error en createUsuarios:", error);
+    res.status(500).json({
+      message: "Error interno al crear el usuario.",
+      error: (error as Error).message,
+    });
+  }
+};
+
 
   readonly addProductoToInventario = async (
     req: Request,

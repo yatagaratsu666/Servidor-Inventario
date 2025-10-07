@@ -147,6 +147,9 @@ export default class ArmorView {
      *         description: Armadura no encontrada.
      */
     this.router.put("/armors/modify/:id", this.armorController.updateArmor);
+
+    this.router.patch("/armors/:id/status", this.armorController.updateArmorStatus);
+
   };
 }
 

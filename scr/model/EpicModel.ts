@@ -197,4 +197,45 @@ export default class EpicModel {
       await this.client.close();
     }
   };
+
+    /**
+   * @async
+   * @function updateEpicById
+   * @description Actualiza una épica por su ID con los datos proporcionados.
+   * @param {number} id - ID de la épica a actualizar.
+   * @param {Partial<EpicInterface>} updatedEpic - Campos a actualizar.
+   * @returns {Promise<EpicInterface | null>} Devuelve la épica actualizada o null si no existe.
+   */
+  readonly updateEpicStatus = async (
+    id: number,
+    updatedEpic: Partial<EpicInterface>
+  ): Promise<EpicInterface | null> => {
+    try {
+      await this.client.connect();
+      const db = this.client.db(this.dbName);
+      const collection = db.collection<EpicInterface>(this.collectionName);
+
+      const updateResult = await collection.updateOne(
+        { id },
+        { $set: updatedEpic }
+      );
+
+      if (updateResult.matchedCount === 0) {
+        console.log(`No se encontró épica con id ${id}`);
+        return null;
+      }
+
+      console.log(`Épica con id ${id} actualizada con éxito`);
+
+      const updatedDoc = await collection.findOne({ id });
+      return updatedDoc;
+    } catch (error) {
+      console.error("Error al actualizar épica:", error);
+      throw error;
+    } finally {
+      await this.client.close();
+    }
+  };
+
+
 }

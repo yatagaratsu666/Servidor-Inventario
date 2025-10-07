@@ -147,6 +147,9 @@ export default class EpicView {
      *         description: Objeto épico no encontrado.
      */
     this.router.put("/epics/modify/:id", this.epicController.updateEpic);
+
+    this.router.patch("/epics/:id/status", this.epicController.updateEpicStatus);
+
   };
 }
 

@@ -185,4 +185,45 @@ export default class WeaponModel {
       await this.client.close();
     }
   };
+
+    /**
+   * @async
+   * @function updateWeaponById
+   * @description Actualiza un arma por su ID con los datos proporcionados.
+   * @param {number} id - ID del arma a actualizar.
+   * @param {Partial<WeaponInterface>} updatedWeapon - Campos a actualizar.
+   * @returns {Promise<WeaponInterface | null>} Devuelve el arma actualizada o null si no existe.
+   */
+  readonly updateWeaponStatus = async (
+    id: number,
+    updatedWeapon: Partial<WeaponInterface>
+  ): Promise<WeaponInterface | null> => {
+    try {
+      await this.client.connect();
+      const db = this.client.db(this.dbName);
+      const collection = db.collection<WeaponInterface>(this.collectionName);
+
+      const updateResult = await collection.updateOne(
+        { id },
+        { $set: updatedWeapon }
+      );
+
+      if (updateResult.matchedCount === 0) {
+        console.log(`No se encontró arma con id ${id}`);
+        return null;
+      }
+
+      console.log(`Arma con id ${id} actualizada con éxito`);
+
+      const updatedDoc = await collection.findOne({ id });
+      return updatedDoc;
+    } catch (error) {
+      console.error("Error al actualizar arma:", error);
+      throw error;
+    } finally {
+      await this.client.close();
+    }
+  };
+
+
 }

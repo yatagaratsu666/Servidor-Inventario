@@ -20,6 +20,9 @@ export default interface HeroInterface {
   /** @description Nivel actual del héroe. */
   level: number;
 
+  /** @description EXP acumulada dentro del nivel actual (0..expRequerida-1) */
+  experience?: number;
+
   /** @description Cantidad de poder del héroe. */
   power: number;
 
@@ -111,5 +114,5 @@ export default interface HeroInterface {
 
     /**Duración del efecto en turnos. */
     durationTurns: number;
-  };
+  }[];
 }

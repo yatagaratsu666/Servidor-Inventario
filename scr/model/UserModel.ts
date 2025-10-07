@@ -20,41 +20,92 @@ export default class UsuarioModel {
     this.client = new MongoClient(this.uri);
   }
 
-  /** Crear uno o varios usuarios */
-  readonly createUsuarios = async (
-    usuarios: UserInterface | UserInterface[],
-  ): Promise<boolean> => {
+  readonly createUsuario = async (nombreUsuario: string, avatar?: string): Promise<boolean> => {
     try {
       await this.client.connect();
       const db = this.client.db(this.dbName);
-      const collection = db.collection<UserInterface>(this.collectionName);
+      const collection = db.collection(this.collectionName);
 
-      if (Array.isArray(usuarios)) {
-        // Filtramos los usuarios que ya existen
-        const existingUsers = await collection
-          .find({ id: { $in: usuarios.map((u) => u.nombreUsuario) } })
-          .project<{ id: string }>({ id: 1 })
-          .toArray();
-
-        const existingIdsSet = new Set(existingUsers.map((u) => u['id']));
-
-        const newUsers = usuarios.filter((u) => !existingIdsSet.has(u.nombreUsuario));
-        if (newUsers.length === 0) return false;
-
-        await collection.insertMany(newUsers);
-        console.log(
-          `Usuarios creados: ${newUsers.map((u) => u.nombreUsuario).join(', ')}`,
-        );
-      } else {
-        const existingUser = await collection.findOne({ id: usuarios.nombreUsuario });
-        if (existingUser) return false;
-        await collection.insertOne(usuarios);
-        console.log(`Usuario creado: ${usuarios.nombreUsuario}`);
+      // Verificar si ya existe el usuario
+      const existing = await collection.findOne({ nombreUsuario });
+      if (existing) {
+        console.warn(`⚠️ El usuario "${nombreUsuario}" ya existe.`);
+        return false;
       }
 
+      // Armar el JSON completo a insertar
+      const newUser = {
+        nombreUsuario,
+        avatar: avatar || "https://images.prestigeonline.com/wp-content/uploads/sites/6/2025/06/16143016/usagi-chiikawa-characters-820x1024-1.jpeg",
+        rol: "jugador",
+        creditos: 1000,
+        exp: 0,
+        inventario: {
+          weapons: [],
+          armors: [],
+          items: [],
+          epicAbility: [],
+          hero: [],
+        },
+        equipados: {
+          weapons: [],
+          armors: [],
+          items: [],
+          epicAbility: [],
+          hero: [
+            {
+              id: 1,
+              name: "Mago de Hielo",
+              image: "https://i.ibb.co/tMpFKhWv/mago-hielo.png",
+              heroType: "ICE_MAGE",
+              description: "Un mago que domina el frío absoluto.",
+              level: 1,
+              power: 10,
+              health: 40,
+              defense: 10,
+              attack: 10,
+              attackBoost: { min: 1, max: 8 },
+              damage: { min: 1, max: 6 },
+              status: true,
+              stock: 1,
+              effects: [
+                { effectType: "CRITIC_DAMAGE", value: 15, durationTurns: 0 }
+              ],
+              specialActions: [
+                {
+                  name: "PARED_FUEGO",
+                  actionType: "ATTACK",
+                  powerCost: 1,
+                  cooldown: 0,
+                  isAvailable: true,
+                  effects: []
+                }
+              ],
+              dropRate: 0.1,
+              randomEffects: [
+                { randomEffectType: "DAMAGE", percentage: 40, valueApply: { min: 0, max: 0 } },
+                { randomEffectType: "CRITIC_DAMAGE", percentage: 0, valueApply: { min: 2, max: 8 } },
+                { randomEffectType: "EVADE", percentage: 5, valueApply: { min: 0, max: 0 } },
+                { randomEffectType: "RESIST", percentage: 0, valueApply: { min: 0, max: 0 } },
+                { randomEffectType: "ESCAPE", percentage: 5, valueApply: { min: 0, max: 0 } },
+                { randomEffectType: "NEGATE", percentage: 50, valueApply: { min: 0, max: 0 } },
+              ],
+              experience: 10
+            }
+          ]
+        },
+        rewardMeta: {
+          claimsThisWeek: 0,
+          weekStartISO: new Date().toISOString()
+        }
+      };
+
+      // Insertar en Mongo
+      const result = await collection.insertOne(newUser);
+      console.log(`✅ Usuario creado con ID: ${result.insertedId}`);
       return true;
     } catch (error) {
-      console.error('Error al crear usuarios:', error);
+      console.error("❌ Error al crear usuario:", error);
       return false;
     } finally {
       await this.client.close();

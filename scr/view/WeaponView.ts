@@ -147,6 +147,9 @@ export default class WeaponView {
      *         description: Arma no encontrada.
      */
     this.router.put("/weapons/modify/:id", this.weaponController.updateWeapon);
+
+    this.router.patch("/weapons/:id/status", this.weaponController.updateWeaponStatus);
+
   };
 }
 

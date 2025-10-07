@@ -202,37 +202,53 @@ export default class ItemController {
    * @param {Response} res Objeto de la respuesta HTTP.
    * @returns {Promise<void>} Devuelve el ítem actualizado o un error si no existe.
    */
-  readonly updateItemStatus = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { id } = req.params as { id: string };
-      const itemId = parseInt(id, 10);
+readonly updateItemStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params as { id: string };
+    const itemId = parseInt(id, 10);
 
-      if (isNaN(itemId)) {
-        res.status(400).json({ message: "ID inválido" });
-        return;
-      }
-
-      const { status } = req.body as { status: boolean };
-
-      if (typeof status !== "boolean") {
-        res.status(400).json({ message: "El campo 'status' debe ser boolean" });
-        return;
-      }
-
-      const updatedItem = await this.itemModel.updateItemById(itemId, { status });
-
-      if (!updatedItem) {
-        res.status(404).json({ message: `No se encontró ítem con id ${itemId}` });
-        return;
-      }
-
-      res.status(200).json({
-        message: `Ítem con id ${itemId} actualizado con éxito`,
-        item: updatedItem,
-      });
-    } catch (error) {
-      console.error("Error en updateItemStatus:", error);
-      res.status(500).json({ message: "Error al actualizar status del ítem", error });
+    if (isNaN(itemId)) {
+      res.status(400).json({ message: "ID inválido" });
+      return;
     }
-  };
+
+    const { status } = req.body as { status: boolean };
+
+    if (typeof status !== "boolean") {
+      res.status(400).json({ message: "El campo 'status' debe ser boolean" });
+      return;
+    }
+
+
+    const currentStatus = await this.itemModel.getItemStatusById(itemId);
+
+    if (currentStatus === null) {
+      res.status(404).json({ message: `No se encontró ítem con id ${itemId}` });
+      return;
+    }
+
+    if (currentStatus === false && status === false) {
+      res.status(400).json({
+        message: `El ítem con id ${itemId} ya está desactivado y no puede volver a subastarse`
+      });
+      return;
+    }
+
+    const updatedItem = await this.itemModel.updateItemById(itemId, { status });
+
+    if (!updatedItem) {
+      res.status(404).json({ message: `No se encontró ítem con id ${itemId}` });
+      return;
+    }
+
+    res.status(200).json({
+      message: `Ítem con id ${itemId} actualizado con éxito`,
+      item: updatedItem,
+    });
+  } catch (error) {
+    console.error("Error en updateItemStatus:", error);
+    res.status(500).json({ message: "Error al actualizar status del ítem", error });
+  }
+};
+
 }

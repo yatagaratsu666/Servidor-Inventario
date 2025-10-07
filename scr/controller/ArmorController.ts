@@ -194,4 +194,40 @@ export default class ArmorController {
       res.status(500).json({ message: "Error al actualizar armadura", error });
     }
   };
+
+    readonly updateArmorStatus = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params as { id: string };
+      const armorId = parseInt(id, 10);
+
+      if (isNaN(armorId)) {
+        res.status(400).json({ message: "ID inválido" });
+        return;
+      }
+
+      const { status } = req.body as { status: boolean };
+
+      if (typeof status !== "boolean") {
+        res.status(400).json({ message: "El campo 'status' debe ser boolean" });
+        return;
+      }
+
+      const updatedArmor = await this.armorModel.updateArmorStatus(armorId, { status });
+
+      if (!updatedArmor) {
+        res.status(404).json({ message: `No se encontró armadura con id ${armorId}` });
+        return;
+      }
+
+      res.status(200).json({
+        message: `Armadura con id ${armorId} actualizada con éxito`,
+        armor: updatedArmor,
+      });
+    } catch (error) {
+      console.error("Error en updateArmorStatus:", error);
+      res.status(500).json({ message: "Error al actualizar status de la armadura", error });
+    }
+  };
+
+
 }
