@@ -56,7 +56,9 @@ export default class Server {
    * - Middleware para parsear datos de formularios con límite de 10mb.
    * @returns {void}
    */
+  
   readonly configure = (): void => {
+    console.log(environment.allowedOrigins);
     this.app.use(
       cors({
         origin: (origin, callback) => {
